@@ -1,22 +1,29 @@
 import { useTranslation } from 'react-i18next'
 import i18n, { SUPPORTED_LANGUAGES } from '@/app/i18n'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 export function LanguageSwitcher() {
-  const { t } = useTranslation()
-  const current = SUPPORTED_LANGUAGES.find((l) => l === i18n.resolvedLanguage) ?? 'ru'
+  const { t, i18n: instance } = useTranslation()
+  const current = SUPPORTED_LANGUAGES.find((l) => l === instance.resolvedLanguage) ?? 'ru'
 
   return (
-    <select
-      aria-label={t('language.label')}
-      value={current}
-      onChange={(e) => void i18n.changeLanguage(e.target.value)}
-      className="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900"
-    >
-      {SUPPORTED_LANGUAGES.map((lng) => (
-        <option key={lng} value={lng}>
-          {t(`language.${lng}`)}
-        </option>
-      ))}
-    </select>
+    <Select value={current} onValueChange={(lng) => void i18n.changeLanguage(lng)}>
+      <SelectTrigger aria-label={t('language.label')} className="w-36">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {SUPPORTED_LANGUAGES.map((lng) => (
+          <SelectItem key={lng} value={lng}>
+            {t(`language.${lng}`)}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   )
 }

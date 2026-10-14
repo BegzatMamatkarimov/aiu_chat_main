@@ -52,6 +52,37 @@
     "callback": {
       "error": "Could not complete sign-in. Please try again.",
       "backToLogin": "Back to sign in"
+    },
+    "tabs": {
+      "signIn": "Sign in",
+      "signUp": "Sign up"
+    },
+    "fields": {
+      "name": "Name",
+      "email": "Email",
+      "password": "Password"
+    },
+    "passwordHint": "At least 8 characters",
+    "signIn": {
+      "submit": "Sign in"
+    },
+    "signUp": {
+      "submit": "Create account",
+      "checkEmail": "We sent a confirmation email. Check your inbox and follow the link."
+    },
+    "google": "Continue with Google",
+    "or": "or",
+    "errors": {
+      "required": "Fill in all fields",
+      "passwordTooShort": "Password must be at least 8 characters",
+      "nameTooLong": "Name must be 1 to 64 characters",
+      "invalidCredentials": "Incorrect email or password",
+      "userExists": "A user with this email already exists",
+      "weakPassword": "Password is too weak",
+      "rateLimit": "Too many attempts. Try again later",
+      "emailNotConfirmed": "Email not confirmed. Check your inbox",
+      "invalidEmail": "Invalid email address",
+      "generic": "Something went wrong. Please try again"
     }
   }
 }

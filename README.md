@@ -34,6 +34,8 @@ cp .env.example .env   # заполнить ключи Supabase (понадоб�
 npm run dev            # http://localhost:5173
 ```
 
+Настройка базы данных Supabase: [docs/SETUP_SUPABASE.md](docs/SETUP_SUPABASE.md).
+
 Проверки:
 
 ```bash
@@ -51,7 +53,7 @@ web/              фронтенд (React)
   src/features/   экраны по разделам: auth, chats, messages, settings
   src/components/ общие компоненты и shadcn/ui
   src/locales/    переводы kk / ru / en
-supabase/         миграции БД (появятся на этапе 1)
+supabase/         миграции БД (migrations/), демо-данные (seed.sql), тесты (tests/)
 ```
 
 ## Деплой

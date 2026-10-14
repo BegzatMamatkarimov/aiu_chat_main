@@ -54,6 +54,7 @@ create table storage.objects (
   bucket_id text,
   name text,
   owner uuid,
+  owner_id text,
   created_at timestamptz default now()
 );
 alter table storage.objects enable row level security;

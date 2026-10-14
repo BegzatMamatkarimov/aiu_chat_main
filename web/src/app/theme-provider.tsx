@@ -4,6 +4,7 @@ export type Theme = 'system' | 'light' | 'dark'
 
 const STORAGE_KEY = 'aiu-theme'
 const DARK_QUERY = '(prefers-color-scheme: dark)'
+const THEME_COLORS = { light: '#f2f6fb', dark: '#0e141f' }
 
 function isTheme(value: string | null): value is Theme {
   return value === 'system' || value === 'light' || value === 'dark'
@@ -32,7 +33,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const root = document.documentElement
     const media = window.matchMedia(DARK_QUERY)
     const apply = () => {
-      root.classList.toggle('dark', theme === 'dark' || (theme === 'system' && media.matches))
+      const dark = theme === 'dark' || (theme === 'system' && media.matches)
+      root.classList.toggle('dark', dark)
+      // Выбор темы в приложении может отличаться от системной: красим строку состояния по нему.
+      document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]').forEach((m) => {
+        m.content = THEME_COLORS[dark ? 'dark' : 'light']
+      })
     }
     apply()
     if (theme !== 'system') return

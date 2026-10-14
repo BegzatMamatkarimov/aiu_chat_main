@@ -1,20 +1,17 @@
-import { useNavigate } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { LogOut } from 'lucide-react'
+import { ChevronLeft, LogOut } from 'lucide-react'
 import { useAuth } from '@/features/auth/use-auth'
 import { useCourseLabel } from '@/features/profile/course'
+import { initials } from '@/features/profile/initials'
 import { ProfileForm } from '@/features/profile/profile-form'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { GlassPattern } from '@/components/glass/glass-background'
+import { GlassCard } from '@/components/glass/glass-card'
 import { Label } from '@/components/ui/label'
 import { LanguageSwitcher } from '@/components/language-switcher'
 import { ThemeToggle } from '@/components/theme-toggle'
-
-function initials(name: string) {
-  const parts = name.trim().split(/\s+/).filter(Boolean)
-  const letters = parts.slice(0, 2).map((p) => Array.from(p)[0])
-  return letters.join('').toUpperCase() || '?'
-}
 
 export function SettingsPage() {
   const { t } = useTranslation()
@@ -28,10 +25,18 @@ export function SettingsPage() {
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-[560px] flex-col gap-6 px-4 py-8">
-      <h1 className="text-2xl font-bold">{t('pages.settings.title')}</h1>
+    <main className="mx-auto flex w-full max-w-[560px] flex-col gap-6 px-4 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))]">
+      <GlassPattern className="fixed -z-10" />
+      <div className="flex items-center gap-2">
+        <Button asChild variant="ghost" size="icon" className="-ml-2 rounded-full text-primary">
+          <Link to="/" aria-label={t('settings.backToChats')}>
+            <ChevronLeft className="size-6" />
+          </Link>
+        </Button>
+        <h1 className="text-2xl font-bold">{t('pages.settings.title')}</h1>
+      </div>
 
-      <Card>
+      <GlassCard>
         <CardHeader>
           <CardTitle>{t('settings.profile')}</CardTitle>
         </CardHeader>
@@ -71,9 +76,9 @@ export function SettingsPage() {
           )}
           <ProfileForm submitLabel={t('settings.save')} onSaved={() => {}} />
         </CardContent>
-      </Card>
+      </GlassCard>
 
-      <Card>
+      <GlassCard>
         <CardHeader>
           <CardTitle>{t('settings.appearance')}</CardTitle>
         </CardHeader>
@@ -87,7 +92,7 @@ export function SettingsPage() {
             <ThemeToggle />
           </div>
         </CardContent>
-      </Card>
+      </GlassCard>
 
       <Button variant="outline" onClick={() => void handleSignOut()}>
         <LogOut />

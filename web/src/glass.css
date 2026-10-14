@@ -1,0 +1,175 @@
+/* Оформление «Стекло». Все цвета светлой и тёмной темы — токены в двух блоках ниже. */
+
+:root {
+  --out-a: var(--primary);
+  --out-b: color-mix(in oklab, var(--primary) 78%, oklch(0.55 0.2 300));
+  --out-fg: oklch(1 0 0);
+  --in-bg: color-mix(in oklab, var(--card) 88%, transparent);
+
+  --mesh-base: oklch(0.975 0.012 240);
+  --mesh-1: oklch(0.82 0.11 235);
+  --mesh-2: oklch(0.84 0.11 320);
+  --mesh-3: oklch(0.86 0.11 175);
+  --mesh-opacity: 0.6;
+  --pattern-color: color-mix(in oklab, var(--primary) 12%, transparent);
+
+  --glass-bar-bg: color-mix(in oklab, var(--background) 88%, transparent);
+  --glass-panel-bg: color-mix(in oklab, var(--background) 85%, transparent);
+  --glass-border: oklch(1 0 0 / 30%);
+  --glass-field-bg: color-mix(in oklab, var(--background) 50%, transparent);
+  --glass-field-border: oklch(1 0 0 / 40%);
+  --glass-seg-bg: color-mix(in oklab, var(--foreground) 6%, transparent);
+  --glass-seg-thumb-bg: color-mix(in oklab, var(--background) 80%, transparent);
+  --glass-seg-thumb-border: oklch(1 0 0 / 60%);
+  --glass-shadow: oklch(0 0 0 / 35%);
+  --glass-edge-shadow: oklch(0 0 0 / 12%);
+}
+
+.dark {
+  --out-a: color-mix(in oklab, var(--primary) 70%, black);
+  --out-b: color-mix(in oklab, var(--primary) 60%, oklch(0.4 0.2 300));
+  --in-bg: color-mix(in oklab, oklch(0.3 0.02 250) 85%, transparent);
+
+  --mesh-base: oklch(0.17 0.025 255);
+  --mesh-1: oklch(0.42 0.13 250);
+  --mesh-2: oklch(0.4 0.14 310);
+  --mesh-3: oklch(0.4 0.1 190);
+  --mesh-opacity: 0.45;
+  --pattern-color: oklch(1 0 0 / 7%);
+
+  --glass-border: oklch(1 0 0 / 10%);
+  --glass-field-border: oklch(1 0 0 / 10%);
+  --glass-seg-thumb-bg: oklch(1 0 0 / 10%);
+  --glass-seg-thumb-border: oklch(1 0 0 / 10%);
+}
+
+/* ---------- Мобильная база ---------- */
+html {
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+  background: var(--mesh-base);
+}
+body {
+  min-height: 100dvh;
+}
+button, a, [role="button"], [role="tab"] {
+  touch-action: manipulation;
+}
+button, [role="tab"] {
+  -webkit-user-select: none;
+  user-select: none;
+}
+@media (pointer: coarse) {
+  input, textarea, select {
+    font-size: 16px;
+  }
+}
+
+/* ---------- Фон ---------- */
+.glass-mesh {
+  overflow: hidden;
+  background: var(--mesh-base);
+  pointer-events: none;
+}
+.glass-mesh i {
+  position: absolute;
+  width: 75%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  filter: blur(64px);
+  opacity: var(--mesh-opacity);
+}
+.glass-mesh i:nth-child(1) { left: -20%; top: -15%; background: var(--mesh-1); }
+.glass-mesh i:nth-child(2) { right: -25%; top: 25%; background: var(--mesh-2); animation-delay: -8s; animation-duration: 29s; }
+.glass-mesh i:nth-child(3) { left: 5%; bottom: -30%; background: var(--mesh-3); animation-delay: -15s; animation-duration: 33s; }
+@keyframes glass-drift {
+  to { transform: translate3d(14%, 10%, 0) scale(1.15); }
+}
+/* Движется только на десктопе; на телефоне и при reduced-motion фон статичный */
+@media (min-width: 768px) and (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .glass-mesh i {
+    will-change: transform;
+    animation: glass-drift 24s ease-in-out infinite alternate;
+  }
+}
+
+.glass-pattern {
+  pointer-events: none;
+  background: var(--pattern-color);
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260' viewBox='0 0 260 260' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 40q12-7 24 0q12-7 24 0v22q-12-7-24 0q-12-7-24 0zM42 40v22'/%3E%3Cpath d='M150 62l32-32l9 9l-32 32l-13 4zM178 34l9 9'/%3E%3Ctext x='72' y='122' font-family='Georgia,serif' font-size='20' font-style='italic' fill='black' stroke='none'%3EE=mc²%3C/text%3E%3Cpath d='M180 150l26-13l26 13l-26 13zM190 156v13q16 9 32 0v-13M232 150v15'/%3E%3Ccircle cx='46' cy='196' r='12'/%3E%3Cpath d='M40 212h12M42 217h8M46 184v-6M37 188l-4-4M55 188l4-4'/%3E%3Ctext x='112' y='214' font-family='Georgia,serif' font-size='30' fill='black' stroke='none'%3E∑%3C/text%3E%3Ctext x='200' y='232' font-family='Georgia,serif' font-size='26' font-style='italic' fill='black' stroke='none'%3Eπ%3C/text%3E%3Ctext x='20' y='120' font-family='Georgia,serif' font-size='14' fill='black' stroke='none'%3E√x%3C/text%3E%3Cpath d='M118 40h24M130 28v24M214 90h18M223 81v18M96 160l10 10M106 160l-10 10'/%3E%3Cpath d='M20 244l56-14l4 12l-56 14z M30 238l3 9M42 235l3 9M54 232l3 9'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260' viewBox='0 0 260 260' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 40q12-7 24 0q12-7 24 0v22q-12-7-24 0q-12-7-24 0zM42 40v22'/%3E%3Cpath d='M150 62l32-32l9 9l-32 32l-13 4zM178 34l9 9'/%3E%3Ctext x='72' y='122' font-family='Georgia,serif' font-size='20' font-style='italic' fill='black' stroke='none'%3EE=mc²%3C/text%3E%3Cpath d='M180 150l26-13l26 13l-26 13zM190 156v13q16 9 32 0v-13M232 150v15'/%3E%3Ccircle cx='46' cy='196' r='12'/%3E%3Cpath d='M40 212h12M42 217h8M46 184v-6M37 188l-4-4M55 188l4-4'/%3E%3Ctext x='112' y='214' font-family='Georgia,serif' font-size='30' fill='black' stroke='none'%3E∑%3C/text%3E%3Ctext x='200' y='232' font-family='Georgia,serif' font-size='26' font-style='italic' fill='black' stroke='none'%3Eπ%3C/text%3E%3Ctext x='20' y='120' font-family='Georgia,serif' font-size='14' fill='black' stroke='none'%3E√x%3C/text%3E%3Cpath d='M118 40h24M130 28v24M214 90h18M223 81v18M96 160l10 10M106 160l-10 10'/%3E%3Cpath d='M20 244l56-14l4 12l-56 14z M30 238l3 9M42 235l3 9M54 232l3 9'/%3E%3C/svg%3E");
+  -webkit-mask-size: 260px 260px;
+  mask-size: 260px 260px;
+}
+
+/* ---------- Стеклянные поверхности ---------- */
+@layer components {
+  .glass-bar {
+    background: var(--glass-bar-bg);
+    border-bottom: 1px solid var(--glass-border);
+    -webkit-backdrop-filter: blur(40px);
+    backdrop-filter: blur(40px);
+  }
+  .glass-panel {
+    background: var(--glass-panel-bg);
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 12px 32px -12px var(--glass-shadow);
+    -webkit-backdrop-filter: blur(40px);
+    backdrop-filter: blur(40px);
+  }
+  .glass-pill {
+    background: var(--glass-bar-bg);
+    border: 1px solid var(--glass-border);
+    -webkit-backdrop-filter: blur(24px);
+    backdrop-filter: blur(24px);
+  }
+  .glass-field {
+    background: var(--glass-field-bg);
+    border: 1px solid var(--glass-field-border);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+  }
+  .glass-seg {
+    background: var(--glass-seg-bg);
+    border: 1px solid var(--glass-field-border);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+  }
+  .glass-seg-thumb {
+    background: var(--glass-seg-thumb-bg);
+    border: 1px solid var(--glass-seg-thumb-border);
+    box-shadow: 0 4px 10px -4px var(--glass-shadow);
+  }
+  .glass-accent {
+    background: linear-gradient(135deg, var(--out-a), var(--out-b));
+    color: var(--out-fg);
+  }
+  .glass-edge {
+    box-shadow: -12px 0 32px var(--glass-edge-shadow);
+  }
+
+  .glass-av {
+    background: linear-gradient(135deg, oklch(0.7 0.13 var(--h)), oklch(0.54 0.15 calc(var(--h) + 25)));
+    color: var(--out-fg);
+  }
+
+  .glass-press {
+    transition: transform 150ms cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .glass-press:active {
+    transform: scale(0.96);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .glass-row:hover {
+      background: color-mix(in oklab, var(--background) 55%, transparent);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .glass-press { transition: none; }
+  }
+}
+
+.glass-scroll {
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}

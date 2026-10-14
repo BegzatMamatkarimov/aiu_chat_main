@@ -16,9 +16,6 @@
     "dark": "Dark"
   },
   "pages": {
-    "home": {
-      "title": "Home"
-    },
     "chat": {
       "title": "Chat"
     },
@@ -39,13 +36,9 @@
       "title": "Tell us about yourself"
     }
   },
-  "nav": {
-    "home": "Home",
-    "login": "Sign in",
-    "settings": "Settings"
-  },
   "common": {
-    "loading": "Loading…"
+    "loading": "Loading…",
+    "back": "Back"
   },
   "auth": {
     "signOut": "Sign out",
@@ -124,6 +117,27 @@
     "appearance": "Appearance",
     "language": "Language",
     "theme": "Theme",
-    "save": "Save"
+    "save": "Save",
+    "backToChats": "Back to chats"
+  },
+  "chats": {
+    "profileMenu": "Profile menu",
+    "search": "Search chats",
+    "noResults": "Nothing found",
+    "select": "Select a chat",
+    "backToList": "Back to chat list",
+    "folders": {
+      "label": "Folders",
+      "all": "All",
+      "subject": "Subjects",
+      "direct": "Direct"
+    },
+    "empty": {
+      "title": "No chats yet",
+      "hint": "Find a subject group with search and join it"
+    }
+  },
+  "chat": {
+    "soon": "Messages are coming soon"
   }
 }

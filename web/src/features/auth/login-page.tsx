@@ -5,7 +5,9 @@ import { Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { getSafeNext } from '@/features/auth/safe-next'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+import { CardContent } from '@/components/ui/card'
+import { CenteredPage } from '@/components/glass/centered-page'
+import { GlassCard } from '@/components/glass/glass-card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
@@ -205,17 +207,20 @@ export function LoginPage() {
   }
 
   return (
-    <main className="relative flex min-h-dvh flex-col items-center justify-center px-4 py-16">
-      <div className="absolute top-4 right-4 flex items-center gap-2">
-        <LanguageSwitcher />
-        <ThemeToggle />
-      </div>
+    <CenteredPage
+      toolbar={
+        <>
+          <LanguageSwitcher />
+          <ThemeToggle />
+        </>
+      }
+    >
       <div className="flex w-full max-w-[400px] flex-col gap-6">
         <div className="text-center">
           <h1 className="text-3xl font-bold">{t('app.name')}</h1>
           <p className="mt-2 text-sm text-muted-foreground">{t('app.tagline')}</p>
         </div>
-        <Card>
+        <GlassCard>
           <CardContent className="flex flex-col gap-4">
             <Button
               type="button"
@@ -244,8 +249,8 @@ export function LoginPage() {
               </TabsContent>
             </Tabs>
           </CardContent>
-        </Card>
+        </GlassCard>
       </div>
-    </main>
+    </CenteredPage>
   )
 }

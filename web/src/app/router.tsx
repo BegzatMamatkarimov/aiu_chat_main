@@ -35,12 +35,17 @@ export const router = createBrowserRouter([
         element: <RequireAuth />,
         children: [
           {
-            index: true,
-            lazy: async () => ({ Component: (await import('@/features/chats/home-page')).HomePage }),
-          },
-          {
-            path: 'c/:chatId',
-            lazy: async () => ({ Component: (await import('@/features/messages/chat-page')).ChatPage }),
+            lazy: async () => ({ Component: (await import('@/features/chats/app-shell')).AppShell }),
+            children: [
+              {
+                index: true,
+                lazy: async () => ({ Component: (await import('@/features/chats/empty-chat')).EmptyChat }),
+              },
+              {
+                path: 'c/:chatId',
+                lazy: async () => ({ Component: (await import('@/features/messages/chat-page')).ChatPage }),
+              },
+            ],
           },
           {
             path: 'join/:code',

@@ -14,11 +14,12 @@ import {
   useFocusOnReply,
   useHeight,
   useMessenger,
+  useScrolling,
   useStickToBottom,
   type Messenger,
   type TimelineItem,
 } from './shared-logic'
-import { Avatar, AutoTextarea, Linkified, MessageMenu, ReplyQuote, SplitShell, VoiceContent } from './shared-ui'
+import { Avatar, AutoTextarea, DateChip, Linkified, MessageMenu, ReplyQuote, SplitShell, VoiceContent } from './shared-ui'
 
 type Folder = 'all' | 'subject' | 'direct'
 const FOLDERS: { id: Folder; label: string }[] = [
@@ -316,6 +317,7 @@ function VividChatBody({ mx, chat }: { mx: Messenger; chat: Chat }) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const composerRef = useRef<HTMLDivElement>(null)
   const composerH = useHeight(composerRef)
+  const scrolling = useScrolling(scrollRef)
   useStickToBottom(scrollRef, chat.id, mx.chatMessages.length, composerH)
   const subject = chat.kind === 'subject'
   const peer = chat.peerId ? PEOPLE[chat.peerId] : null
@@ -362,11 +364,7 @@ function VividChatBody({ mx, chat }: { mx: Messenger; chat: Chat }) {
         <div className="mx-auto max-w-3xl">
           {mx.days.map((day) => (
             <section key={day.key}>
-              <div className="sticky z-10 flex justify-center py-2" style={{ top: HEADER_H + 6 }}>
-                <span className="rounded-full border border-border/50 bg-background/75 px-3 py-1 text-xs font-medium text-foreground/80 shadow-sm backdrop-blur-md">
-                  {day.label}
-                </span>
-              </div>
+              <DateChip label={day.label} top={4} scrollerRef={scrollRef} scrolling={scrolling} chipClass="rounded-full border border-border/50 bg-background/75 px-3 py-1 text-xs font-medium text-foreground/80 shadow-sm backdrop-blur-md" />
               {day.items.map((item) => (
                 <VividMessage key={item.msg.id} item={item} mx={mx} subject={subject} hue={chat.hue} />
               ))}

@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type ReactNode, type RefO
 import { AnimatePresence, motion } from 'motion/react'
 import { Pause, Play, Reply, X } from 'lucide-react'
 import { PEOPLE, type Msg } from './demo-data'
-import { EASE_DRAWER, EASE_OUT, REACTION_SET, hueStyle, previewOf, useIsDesktop } from './shared-logic'
+import { EASE_DRAWER, EASE_OUT, REACTION_SET, hueStyle, previewOf, useIsDesktop, useIsStuck } from './shared-logic'
 
 export function Avatar({
   label,
@@ -372,5 +372,36 @@ export function SplitShell({
         {chat}
       </motion.main>
     </div>
+  )
+}
+
+export function DateChip({
+  label,
+  top,
+  scrollerRef,
+  scrolling,
+  chipClass,
+}: {
+  label: string
+  top: number
+  scrollerRef: RefObject<HTMLElement | null>
+  scrolling: boolean
+  chipClass: string
+}) {
+  const sentinel = useRef<HTMLDivElement>(null)
+  const stuck = useIsStuck(sentinel, scrollerRef, top)
+  const visible = !stuck || scrolling
+  return (
+    <>
+      <div ref={sentinel} className="h-0" aria-hidden="true" />
+      <div className="pointer-events-none sticky z-10 flex justify-center py-2" style={{ top }}>
+        <span
+          className={`${chipClass} transition-opacity duration-200 ease-out motion-reduce:transition-none`}
+          style={{ opacity: visible ? 1 : 0 }}
+        >
+          {label}
+        </span>
+      </div>
+    </>
   )
 }

@@ -14,11 +14,12 @@ import {
   useFocusOnReply,
   useHeight,
   useMessenger,
+  useScrolling,
   useStickToBottom,
   type Messenger,
   type TimelineItem,
 } from './shared-logic'
-import { Avatar, AutoTextarea, Linkified, MessageMenu, Reactions, ReplyQuote, SplitShell, VoiceContent } from './shared-ui'
+import { Avatar, AutoTextarea, DateChip, Linkified, MessageMenu, Reactions, ReplyQuote, SplitShell, VoiceContent } from './shared-ui'
 
 type Folder = 'all' | 'subject' | 'direct'
 const FOLDERS: { id: Folder; label: string }[] = [
@@ -61,7 +62,7 @@ function GlassList({ mx }: { mx: Messenger }) {
       <Mesh />
       <div
         ref={headRef}
-        className="absolute inset-x-0 top-0 z-10 border-b border-white/30 bg-background/55 px-3 pb-3 pt-3 backdrop-blur-2xl dark:border-white/10"
+        className="absolute inset-x-0 top-0 z-10 border-b border-white/30 bg-background/88 px-3 pb-3 pt-3 backdrop-blur-2xl dark:border-white/10"
       >
         <div className="flex items-center justify-between gap-2">
           <h1 className="flex items-center gap-2 text-xl font-bold tracking-tight">
@@ -184,6 +185,7 @@ function GlassChatBody({ mx, chat }: { mx: Messenger; chat: Chat }) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const composerRef = useRef<HTMLDivElement>(null)
   const composerH = useHeight(composerRef)
+  const scrolling = useScrolling(scrollRef)
   useStickToBottom(scrollRef, chat.id, mx.chatMessages.length, composerH)
   const subject = chat.kind === 'subject'
   const peer = chat.peerId ? PEOPLE[chat.peerId] : null
@@ -195,7 +197,7 @@ function GlassChatBody({ mx, chat }: { mx: Messenger; chat: Chat }) {
       <div className="proto-pattern pointer-events-none absolute inset-0 bg-primary/[0.12] dark:bg-white/[0.07]" />
 
       <header
-        className="absolute inset-x-0 top-0 z-20 flex items-center gap-2 border-b border-white/30 bg-background/55 px-2 backdrop-blur-2xl dark:border-white/10 md:px-4"
+        className="absolute inset-x-0 top-0 z-20 flex items-center gap-2 border-b border-white/30 bg-background/90 px-2 backdrop-blur-2xl dark:border-white/10 md:px-4"
         style={{ height: HEADER_H }}
       >
         <button
@@ -228,11 +230,7 @@ function GlassChatBody({ mx, chat }: { mx: Messenger; chat: Chat }) {
         <div className="mx-auto max-w-3xl">
           {mx.days.map((day) => (
             <section key={day.key}>
-              <div className="sticky z-10 flex justify-center py-2" style={{ top: HEADER_H + 6 }}>
-                <span className="rounded-full border border-white/50 bg-background/55 px-3 py-1 text-xs font-medium text-foreground/80 shadow-md backdrop-blur-xl dark:border-white/10">
-                  {day.label}
-                </span>
-              </div>
+              <DateChip label={day.label} top={4} scrollerRef={scrollRef} scrolling={scrolling} chipClass="rounded-full border border-white/50 bg-background/80 px-3 py-1 text-xs font-medium text-foreground/80 shadow-md backdrop-blur-xl dark:border-white/10" />
               {day.items.map((item) => (
                 <GlassMessage key={item.msg.id} item={item} mx={mx} subject={subject} />
               ))}
@@ -389,7 +387,7 @@ function GlassComposer({ mx, composerRef }: { mx: Messenger; composerRef: RefObj
       ref={composerRef}
       className="absolute inset-x-0 bottom-0 z-20 px-2 pb-[max(env(safe-area-inset-bottom),0.5rem)] md:px-4"
     >
-      <div className="mx-auto max-w-3xl rounded-[1.75rem] border border-white/40 bg-background/55 p-1.5 shadow-[0_12px_32px_-12px_rgba(0,0,0,0.35)] backdrop-blur-2xl dark:border-white/10">
+      <div className="mx-auto max-w-3xl rounded-[1.75rem] border border-white/40 bg-background/85 p-1.5 shadow-[0_12px_32px_-12px_rgba(0,0,0,0.35)] backdrop-blur-2xl dark:border-white/10">
         <AnimatePresence initial={false}>
           {mx.replyTo && (
             <motion.div

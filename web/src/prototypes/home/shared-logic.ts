@@ -396,3 +396,43 @@ export function previewLine(chat: Chat, last: Msg | undefined): string {
   if (chat.kind === 'subject') return `${PEOPLE[last.authorId].name.split(' ')[0]}: ${body}`
   return body
 }
+
+export function useScrolling(ref: RefObject<HTMLElement | null>, idleMs = 1000): boolean {
+  const [scrolling, setScrolling] = useState(false)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    let timer: number | undefined
+    const onScroll = () => {
+      setScrolling(true)
+      window.clearTimeout(timer)
+      timer = window.setTimeout(() => setScrolling(false), idleMs)
+    }
+    el.addEventListener('scroll', onScroll, { passive: true })
+    return () => {
+      el.removeEventListener('scroll', onScroll)
+      window.clearTimeout(timer)
+    }
+  }, [ref, idleMs])
+  return scrolling
+}
+
+export function useIsStuck(
+  sentinel: RefObject<HTMLElement | null>,
+  scroller: RefObject<HTMLElement | null>,
+  top: number,
+): boolean {
+  const [stuck, setStuck] = useState(false)
+  useEffect(() => {
+    const target = sentinel.current
+    const root = scroller.current
+    if (!target || !root) return
+    const io = new IntersectionObserver(
+      ([entry]) => setStuck(!entry.isIntersecting && entry.boundingClientRect.top < (entry.rootBounds?.top ?? 0)),
+      { root, rootMargin: `-${top + (parseFloat(getComputedStyle(root).paddingTop) || 0)}px 0px 0px 0px`, threshold: 0 },
+    )
+    io.observe(target)
+    return () => io.disconnect()
+  }, [sentinel, scroller, top])
+  return stuck
+}

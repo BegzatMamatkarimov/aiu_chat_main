@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react'
+import { useState, type CSSProperties } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
 import { useShell } from '@/features/chats/shell-context'
 import { EASE_DRAWER } from '@/lib/motion'
@@ -18,15 +18,19 @@ export function ChatAvatar({
   label,
   size,
   side,
+  src,
 }: {
   chatId: string
   label: string
+  src?: string | null
   size: number
   side: 'list' | 'header'
 }) {
   const { desktop, open } = useShell()
   const reduce = useReducedMotion()
   const shared = !desktop && !reduce && (side === 'list' || open)
+  const [failed, setFailed] = useState<string | null>(null)
+  const image = src && failed !== src ? src : null
 
   const avatar = (
     <span
@@ -41,7 +45,11 @@ export function ChatAvatar({
         } as CSSProperties
       }
     >
-      {label}
+      {image ? (
+        <img src={image} alt="" draggable={false} onError={() => setFailed(image)} className="size-full rounded-full object-cover" />
+      ) : (
+        label
+      )}
     </span>
   )
   if (!shared) return avatar

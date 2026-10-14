@@ -34,7 +34,7 @@ export function AppShell() {
       <div className="h-dvh overflow-hidden pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
         {desktop ? (
           <div className="flex h-full min-h-0">
-            <aside className="min-w-0 shrink-0 border-r border-[var(--glass-border)]" style={{ width: LIST_WIDTH }}>
+            <aside className="min-w-0 shrink-0 border-r border-border" style={{ width: LIST_WIDTH }}>
               <ChatListPanel />
             </aside>
             <main className="relative min-w-0 flex-1">

@@ -135,9 +135,29 @@
     "empty": {
       "title": "No chats yet",
       "hint": "Find a subject group with search and join it"
+    },
+    "noMessages": "No messages yet",
+    "folderEmpty": "Nothing in this folder yet",
+    "error": "Couldn't load chats",
+    "retry": "Retry",
+    "preview": {
+      "you": "You",
+      "deleted": "Message deleted",
+      "image": "Photo",
+      "video": "Video",
+      "audio": "Voice message",
+      "file": "File"
     }
   },
   "chat": {
-    "soon": "Messages are coming soon"
+    "soon": "Messages are coming soon",
+    "notFound": {
+      "title": "Chat not found",
+      "hint": "It was deleted, or you don't have access to it",
+      "toList": "To chat list"
+    },
+    "loadError": "Couldn't load the chat",
+    "members_one": "{{count}} member",
+    "members_other": "{{count}} members"
   }
 }

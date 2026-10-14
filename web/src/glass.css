@@ -1,8 +1,7 @@
 /* Оформление «Стекло». Все цвета светлой и тёмной темы — токены в двух блоках ниже. */
 
 :root {
-  /* Орнамент «қошқар мүйіз» (маски): --orn-bg — тайл для фона, --orn-ribbon — лента под шапкой */
-  --orn-ribbon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='24' viewBox='0 0 48 24' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M24 23C24 16 19.5 12 14 12C9 12 5.5 15.5 7 19C8.2 21.7 11.8 21.6 12.6 19.3C13.2 17.5 11.4 16.3 10 17.2'/%3E%3Cpath d='M24 23C24 16 28.5 12 34 12C39 12 42.5 15.5 41 19C39.8 21.7 36.2 21.6 35.4 19.3C34.8 17.5 36.6 16.3 38 17.2'/%3E%3Cpath d='M24 2.5L27 6.2L24 9.9L21 6.2Z'/%3E%3Cpath d='M24 10.5V23'/%3E%3C/svg%3E");
+  /* Орнамент «қошқар мүйіз» (маски): --orn-bg — тайл для фона */
   --orn-bg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cg%3E%3Cpath d='M24 23C24 16 19.5 12 14 12C9 12 5.5 15.5 7 19C8.2 21.7 11.8 21.6 12.6 19.3C13.2 17.5 11.4 16.3 10 17.2'/%3E%3Cpath d='M24 23C24 16 28.5 12 34 12C39 12 42.5 15.5 41 19C39.8 21.7 36.2 21.6 35.4 19.3C34.8 17.5 36.6 16.3 38 17.2'/%3E%3Cpath d='M24 2.5L27 6.2L24 9.9L21 6.2Z'/%3E%3Cpath d='M24 10.5V23'/%3E%3C/g%3E%3Cg transform='translate(24 24)'%3E%3Cpath d='M24 23C24 16 19.5 12 14 12C9 12 5.5 15.5 7 19C8.2 21.7 11.8 21.6 12.6 19.3C13.2 17.5 11.4 16.3 10 17.2'/%3E%3Cpath d='M24 23C24 16 28.5 12 34 12C39 12 42.5 15.5 41 19C39.8 21.7 36.2 21.6 35.4 19.3C34.8 17.5 36.6 16.3 38 17.2'/%3E%3Cpath d='M24 2.5L27 6.2L24 9.9L21 6.2Z'/%3E%3Cpath d='M24 10.5V23'/%3E%3C/g%3E%3Cg transform='translate(-24 24)'%3E%3Cpath d='M24 23C24 16 19.5 12 14 12C9 12 5.5 15.5 7 19C8.2 21.7 11.8 21.6 12.6 19.3C13.2 17.5 11.4 16.3 10 17.2'/%3E%3Cpath d='M24 23C24 16 28.5 12 34 12C39 12 42.5 15.5 41 19C39.8 21.7 36.2 21.6 35.4 19.3C34.8 17.5 36.6 16.3 38 17.2'/%3E%3Cpath d='M24 2.5L27 6.2L24 9.9L21 6.2Z'/%3E%3Cpath d='M24 10.5V23'/%3E%3C/g%3E%3C/svg%3E");
 
   --out-a: #393085;
@@ -19,7 +18,7 @@
   --pattern-image: var(--orn-bg);
   --pattern-size: 72px;
 
-  /* Шапки (список чатов, чат): сплошной индиго с белым текстом и лентой орнамента */
+  /* Шапки (список чатов, чат): сплошной индиго с белым текстом */
   --bar-bg: linear-gradient(135deg, #393085 0%, #262157 100%);
   --bar-fg: #fff;
   --bar-muted: rgb(255 255 255 / 80%);
@@ -29,7 +28,6 @@
   --bar-border: transparent;
   --bar-blur: none;
   --bar-ring: rgb(255 255 255 / 60%);
-  --bar-ribbon: #019384;
 
   --glass-bar-bg: rgb(255 255 255 / 96%);
   --glass-panel-bg: rgb(255 255 255 / 95%);
@@ -75,6 +73,14 @@
   --badge-on-accent-fg: #393085;
 }
 
+/* Десктоп, светлая тема: большая правая область — узор бледнее и крупнее, как фактура (тёмная тема ниже не меняется) */
+@media (min-width: 768px) {
+  :root {
+    --pattern-color: rgb(57 48 133 / 3.5%);
+    --pattern-size: 120px;
+  }
+}
+
 .dark {
   --out-a: color-mix(in oklab, var(--primary) 70%, black);
   --out-b: color-mix(in oklab, var(--primary) 60%, oklch(0.4 0.2 300));
@@ -99,7 +105,6 @@
   --bar-border: var(--glass-border);
   --bar-blur: blur(40px);
   --bar-ring: color-mix(in oklab, var(--primary) 40%, transparent);
-  --bar-ribbon: transparent;
 
   --glass-bar-bg: color-mix(in oklab, var(--background) 88%, transparent);
   --glass-panel-bg: color-mix(in oklab, var(--background) 85%, transparent);
@@ -208,22 +213,6 @@ button, [role="tab"] {
     border-bottom: 1px solid var(--bar-border);
     -webkit-backdrop-filter: var(--bar-blur);
     backdrop-filter: var(--bar-blur);
-  }
-  /* Лента орнамента под шапкой (в тёмной теме прозрачна) */
-  .glass-bar::after {
-    content: "";
-    position: absolute;
-    inset: 100% 0 auto 0;
-    height: 14px;
-    background: var(--bar-ribbon);
-    opacity: 0.85;
-    pointer-events: none;
-    -webkit-mask-image: var(--orn-ribbon);
-    mask-image: var(--orn-ribbon);
-    -webkit-mask-repeat: repeat-x;
-    mask-repeat: repeat-x;
-    -webkit-mask-size: 28px 14px;
-    mask-size: 28px 14px;
   }
   .glass-panel {
     background: var(--glass-panel-bg);

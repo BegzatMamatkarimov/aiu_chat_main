@@ -1,23 +1,62 @@
 import { createBrowserRouter } from 'react-router'
 import { RootLayout } from '@/app/root-layout'
-import { NotFoundPage } from '@/app/not-found-page'
-import { HomePage } from '@/features/chats/home-page'
-import { JoinPage } from '@/features/chats/join-page'
-import { ChatPage } from '@/features/messages/chat-page'
-import { LoginPage } from '@/features/auth/login-page'
-import { SettingsPage } from '@/features/settings/settings-page'
+import { RequireAuth, RedirectIfAuthed } from '@/app/guards'
+import { PageSpinner } from '@/components/page-spinner'
 
 export const router = createBrowserRouter([
   {
     path: '/',
     element: <RootLayout />,
+    hydrateFallbackElement: <PageSpinner />,
     children: [
-      { index: true, element: <HomePage /> },
-      { path: 'c/:chatId', element: <ChatPage /> },
-      { path: 'join/:code', element: <JoinPage /> },
-      { path: 'login', element: <LoginPage /> },
-      { path: 'settings', element: <SettingsPage /> },
-      { path: '*', element: <NotFoundPage /> },
+      {
+        element: <RedirectIfAuthed />,
+        children: [
+          {
+            path: 'login',
+            lazy: async () => ({ Component: (await import('@/features/auth/login-page')).LoginPage }),
+          },
+        ],
+      },
+      {
+        path: 'auth/callback',
+        lazy: async () => ({
+          Component: (await import('@/features/auth/auth-callback-page')).AuthCallbackPage,
+        }),
+      },
+      {
+        element: <RequireAuth />,
+        children: [
+          {
+            index: true,
+            lazy: async () => ({ Component: (await import('@/features/chats/home-page')).HomePage }),
+          },
+          {
+            path: 'c/:chatId',
+            lazy: async () => ({ Component: (await import('@/features/messages/chat-page')).ChatPage }),
+          },
+          {
+            path: 'join/:code',
+            lazy: async () => ({ Component: (await import('@/features/chats/join-page')).JoinPage }),
+          },
+          {
+            path: 'settings',
+            lazy: async () => ({
+              Component: (await import('@/features/settings/settings-page')).SettingsPage,
+            }),
+          },
+          {
+            path: 'onboarding',
+            lazy: async () => ({
+              Component: (await import('@/features/auth/onboarding-page')).OnboardingPage,
+            }),
+          },
+        ],
+      },
+      {
+        path: '*',
+        lazy: async () => ({ Component: (await import('@/app/not-found-page')).NotFoundPage }),
+      },
     ],
   },
 ])

@@ -34,11 +34,24 @@
     "notFound": {
       "title": "Page not found",
       "back": "Back to home"
+    },
+    "onboarding": {
+      "title": "Welcome"
     }
   },
   "nav": {
     "home": "Home",
     "login": "Sign in",
     "settings": "Settings"
+  },
+  "common": {
+    "loading": "Loading…"
+  },
+  "auth": {
+    "signOut": "Sign out",
+    "callback": {
+      "error": "Could not complete sign-in. Please try again.",
+      "backToLogin": "Back to sign in"
+    }
   }
 }

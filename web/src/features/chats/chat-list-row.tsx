@@ -28,7 +28,7 @@ export function ChatListRow({ chat, active }: { chat: ChatListItem; active: bool
             {chat.preview}
           </span>
           {chat.unread > 0 && (
-            <span className="flex h-[1.375rem] min-w-[1.375rem] shrink-0 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-semibold tabular-nums text-primary-foreground">
+            <span className="glass-badge flex h-[1.375rem] min-w-[1.375rem] shrink-0 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-semibold tabular-nums text-primary-foreground">
               {chat.unread}
             </span>
           )}

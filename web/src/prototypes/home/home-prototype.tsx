@@ -1,15 +1,22 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ComponentType } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { createRoot } from 'react-dom/client'
+import { Navigate, RouterProvider, createMemoryRouter } from 'react-router'
 import { MotionConfig } from 'motion/react'
+import type { User } from '@supabase/supabase-js'
 import './prototype.css'
-import { VariantGlass } from './variant-glass'
-import { VariantVivid } from './variant-vivid'
-import { VariantMotion } from './variant-motion'
+import { GlassBackground } from '@/components/glass/glass-background'
+import { AuthContext, type AuthContextValue } from '@/features/auth/auth-context'
+import { AppShell } from '@/features/chats/app-shell'
+import { ChatListDataContext } from '@/features/chats/chat-list-data'
+import { EmptyChat } from '@/features/chats/empty-chat'
+import { DemoChat } from './demo-chat'
+import { CHATS } from './demo-data'
 
-const VARIANTS: { name: string; Component: ComponentType }[] = [
-  { name: 'Стекло', Component: VariantGlass },
-  { name: 'Неон', Component: VariantVivid },
-  { name: 'Живой', Component: VariantMotion },
-]
+const VARIANTS = [
+  { id: 'indigo-white', name: 'Белый', title: 'Белый + индиго', note: 'Чистый фон, индиго-пузыри, орнамент вместо узора, бирюза для непрочитанных и ссылок' },
+  { id: 'lavender-glass', name: 'Лаванда', title: 'Лавандовое стекло', note: 'Стекло как сейчас, но mesh из индиго и лаванды с каплей бирюзы, без розового' },
+  { id: 'indigo-header', name: 'Шапка', title: 'Индиго-шапка', note: 'Как на сайте: сплошные индиго-шапки, белый контент, лента орнамента' },
+] as const
 
 function initialIndex(): number {
   const n = parseInt(new URLSearchParams(location.search).get('v') ?? '', 10)
@@ -81,9 +88,85 @@ function Picker({
   )
 }
 
+const DEMO_AUTH: AuthContextValue = {
+  session: null,
+  user: { id: 'demo', email: 'alikhan@aiu.kz' } as User,
+  initializing: false,
+  profile: { id: 'demo', username: 'alikhan', display_name: 'Алихан Сериков', avatar_url: null, course: 2, major: 'IT', locale: 'ru', created_at: '' },
+  profileLoading: false,
+  refetchProfile: () => Promise.resolve(),
+  signOut: () => Promise.resolve(),
+}
+
+function startPath(): string {
+  const screen = new URLSearchParams(location.search).get('screen')
+  if (screen === 'chat') return '/c/alg'
+  if (screen === 'list') return '/'
+  return window.matchMedia('(min-width: 768px)').matches ? '/c/alg' : '/'
+}
+
+// Открытый экран переживает смену варианта и «replay».
+let lastPath = startPath()
+
+/**
+ * Настоящий каркас приложения (AppShell, список, шапка) с демо-данными в отдельном корне React:
+ * внешний роутер страницы прототипов нельзя вкладывать в другой, а памяти-роутер нужен для /c/:chatId.
+ */
+function DemoApp({ nonce }: { nonce: number }) {
+  const hostRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const parent = hostRef.current
+    if (!parent) return
+    const host = document.createElement('div')
+    host.className = 'h-full'
+    parent.append(host)
+    const router = createMemoryRouter(
+      [
+        {
+          element: <AppShell />,
+          children: [
+            { index: true, element: <EmptyChat /> },
+            { path: 'c/:chatId', element: <DemoChat /> },
+            { path: '*', element: <Navigate to="/" replace /> },
+          ],
+        },
+      ],
+      { initialEntries: [lastPath] },
+    )
+    const unsubscribe = router.subscribe((s) => {
+      lastPath = s.location.pathname
+    })
+    const root = createRoot(host)
+    root.render(
+      <MotionConfig reducedMotion="user">
+        <AuthContext.Provider value={DEMO_AUTH}>
+          <ChatListDataContext.Provider value={CHATS}>
+            <div className="relative isolate h-full overflow-hidden text-foreground">
+              <GlassBackground />
+              <RouterProvider router={router} />
+            </div>
+          </ChatListDataContext.Provider>
+        </AuthContext.Provider>
+      </MotionConfig>,
+    )
+    return () => {
+      unsubscribe()
+      queueMicrotask(() => {
+        root.unmount()
+        router.dispose()
+        host.remove()
+      })
+    }
+  }, [nonce])
+
+  return <div ref={hostRef} className="proto-stage min-h-0 flex-1" />
+}
+
 export function HomePrototype() {
   const [current, setCurrent] = useState(initialIndex)
   const [nonce, setNonce] = useState(0)
+  const [dark, setDark] = useState(false)
 
   const select = useCallback((i: number) => {
     if (i < 0 || i >= VARIANTS.length) return
@@ -109,7 +192,19 @@ export function HomePrototype() {
     return () => document.removeEventListener('keydown', onKey)
   }, [current, select])
 
-  // Full-screen app shell: lock page scroll and let env(safe-area-inset-*) work.
+  // Вариант светлой палитры — атрибут на корневом элементе; тема прототипа принудительная.
+  useLayoutEffect(() => {
+    const root = document.documentElement
+    const wasDark = root.classList.contains('dark')
+    root.dataset.light = VARIANTS[current].id
+    root.classList.toggle('dark', dark)
+    return () => {
+      delete root.dataset.light
+      root.classList.toggle('dark', wasDark)
+    }
+  }, [current, dark])
+
+  // Полноэкранный каркас: без прокрутки страницы, работает env(safe-area-inset-*).
   useEffect(() => {
     document.documentElement.classList.add('proto-lock')
     const meta = document.querySelector<HTMLMetaElement>('meta[name="viewport"]')
@@ -121,17 +216,31 @@ export function HomePrototype() {
     }
   }, [])
 
-  const { Component } = VARIANTS[current]
+  const variant = VARIANTS[current]
 
   return (
-    <MotionConfig reducedMotion="user">
-      <div className="proto-root flex h-dvh flex-col bg-background text-foreground">
-        <div className="h-16 shrink-0 border-b bg-muted/60" aria-hidden="true" />
-        <div className="min-h-0 flex-1 pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
-          <Component key={`${current}-${nonce}`} />
+    <div className="proto-root flex h-dvh flex-col bg-background text-foreground">
+      <div className="proto-panel relative z-10 flex shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b bg-background px-3 pb-2 pt-[4.25rem] md:h-16 md:flex-nowrap md:py-0">
+        <p className="min-w-0 truncate text-xs md:max-w-[calc(50%-9rem)] md:text-sm">
+          <span className="font-semibold">{variant.title}</span>
+          <span className="hidden text-muted-foreground lg:inline"> — {dark ? 'тёмная тема не меняется' : variant.note}</span>
+        </p>
+        <div role="group" aria-label="Тема прототипа" className="proto-theme flex shrink-0 rounded-full border p-0.5 text-xs font-medium">
+          {([false, true] as const).map((isDark) => (
+            <button
+              key={String(isDark)}
+              type="button"
+              aria-pressed={dark === isDark}
+              onClick={() => setDark(isDark)}
+              className={`h-6 rounded-full px-3 ${dark === isDark ? 'bg-foreground text-background' : 'text-muted-foreground'}`}
+            >
+              {isDark ? 'Тёмная' : 'Светлая'}
+            </button>
+          ))}
         </div>
-        <Picker current={current} onSelect={select} onReplay={() => setNonce((n) => n + 1)} />
       </div>
-    </MotionConfig>
+      <DemoApp nonce={nonce} />
+      <Picker current={current} onSelect={select} onReplay={() => setNonce((n) => n + 1)} />
+    </div>
   )
 }

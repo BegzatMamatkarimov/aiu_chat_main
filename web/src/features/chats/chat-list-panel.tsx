@@ -1,9 +1,10 @@
-import { useRef, useState } from 'react'
+import { useContext, useRef, useState } from 'react'
 import { useMatch } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'motion/react'
 import { MessagesSquare, Search } from 'lucide-react'
-import { ChatListRow, type ChatListItem } from '@/features/chats/chat-list-row'
+import { ChatListDataContext } from '@/features/chats/chat-list-data'
+import { ChatListRow } from '@/features/chats/chat-list-row'
 import { ProfileMenu } from '@/features/chats/profile-menu'
 import { EASE_OUT } from '@/lib/motion'
 import { useHeight } from '@/lib/use-height'
@@ -11,11 +12,9 @@ import { useHeight } from '@/lib/use-height'
 const FOLDERS = ['all', 'subject', 'direct'] as const
 type Folder = (typeof FOLDERS)[number]
 
-// Данные подключаются в задачах 4.3 (список) и 4.4 (поиск).
-const CHATS: ChatListItem[] = []
-
 export function ChatListPanel() {
   const { t } = useTranslation()
+  const chats = useContext(ChatListDataContext)
   const [folder, setFolder] = useState<Folder>('all')
   const [query, setQuery] = useState('')
   const headRef = useRef<HTMLDivElement>(null)
@@ -81,7 +80,7 @@ export function ChatListPanel() {
         className="glass-scroll absolute inset-0 overflow-y-auto px-1.5 pb-[max(env(safe-area-inset-bottom),0.375rem)]"
         style={{ paddingTop: headH + 6 }}
       >
-        {CHATS.length === 0 ? (
+        {chats.length === 0 ? (
           <div className="flex flex-col items-center px-6 py-16 text-center">
             <span className="glass-accent mb-4 flex size-14 items-center justify-center rounded-2xl shadow-md">
               <MessagesSquare className="size-7" />
@@ -90,7 +89,7 @@ export function ChatListPanel() {
             {!searching && <p className="mt-1 max-w-64 text-sm text-muted-foreground">{t('chats.empty.hint')}</p>}
           </div>
         ) : (
-          CHATS.map((chat) => <ChatListRow key={chat.id} chat={chat} active={chat.id === activeId} />)
+          chats.map((chat) => <ChatListRow key={chat.id} chat={chat} active={chat.id === activeId} />)
         )}
       </div>
     </div>

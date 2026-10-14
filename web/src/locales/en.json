@@ -122,7 +122,7 @@
   },
   "chats": {
     "profileMenu": "Profile menu",
-    "search": "Search chats",
+    "search": "Search chats and groups",
     "noResults": "Nothing found",
     "select": "Select a chat",
     "backToList": "Back to chat list",
@@ -147,6 +147,24 @@
       "video": "Video",
       "audio": "Voice message",
       "file": "File"
+    },
+    "members_one": "{{count}} member",
+    "members_other": "{{count}} members",
+    "sections": {
+      "mine": "My chats",
+      "groups": "Public groups",
+      "popular": "Popular groups"
+    },
+    "groups": {
+      "minChars": "Enter at least 2 characters to search groups",
+      "none": "No groups found",
+      "error": "Couldn't search groups"
+    },
+    "join": {
+      "action": "Join",
+      "done": "You joined \"{{name}}\"",
+      "error": "Couldn't join the group. Please try again",
+      "denied": "This group can't be joined: it's no longer public"
     }
   },
   "chat": {

@@ -1,0 +1,18 @@
+{
+  "app": {
+    "name": "AIU Chat",
+    "tagline": "Chat for Astana International University students"
+  },
+  "language": {
+    "label": "Language",
+    "kk": "Қазақша",
+    "ru": "Русский",
+    "en": "English"
+  },
+  "theme": {
+    "label": "Theme",
+    "system": "System",
+    "light": "Light",
+    "dark": "Dark"
+  }
+}

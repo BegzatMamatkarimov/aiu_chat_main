@@ -36,7 +36,7 @@
       "back": "Back to home"
     },
     "onboarding": {
-      "title": "Welcome"
+      "title": "Tell us about yourself"
     }
   },
   "nav": {
@@ -84,5 +84,46 @@
       "invalidEmail": "Invalid email address",
       "generic": "Something went wrong. Please try again"
     }
+  },
+  "profile": {
+    "course": {
+      "1": "Year 1",
+      "2": "Year 2",
+      "3": "Year 3",
+      "4": "Year 4",
+      "5": "Master's, year 1",
+      "6": "Master's, year 2"
+    },
+    "fields": {
+      "displayName": "Name",
+      "username": "Username",
+      "course": "Year of study",
+      "coursePlaceholder": "Select your year",
+      "major": "Major",
+      "majorPlaceholder": "E.g. Information Systems"
+    },
+    "usernameHint": "3–32 characters: Latin letters, digits, _",
+    "username": {
+      "checking": "Checking…",
+      "taken": "Username is taken",
+      "available": "Username is available"
+    },
+    "errors": {
+      "required": "Fill in the required fields",
+      "usernameInvalid": "Invalid username",
+      "generic": "Could not save. Please try again"
+    },
+    "saved": "Profile saved"
+  },
+  "onboarding": {
+    "subtitle": "Your year helps you find upperclassmen and get help with exams.",
+    "submit": "Continue"
+  },
+  "settings": {
+    "profile": "Profile",
+    "appearance": "Appearance",
+    "language": "Language",
+    "theme": "Theme",
+    "save": "Save"
   }
 }

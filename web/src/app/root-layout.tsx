@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Toaster } from '@/components/ui/sonner'
 import { useAuth } from '@/features/auth/use-auth'
+import { LocaleSync } from '@/features/profile/locale-sync'
 
 export function RootLayout() {
   const { t } = useTranslation()
@@ -29,6 +30,7 @@ export function RootLayout() {
       )}
       <Outlet />
       <Toaster />
+      <LocaleSync />
     </div>
   )
 }

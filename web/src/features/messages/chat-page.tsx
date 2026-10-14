@@ -1,13 +1,14 @@
-import { useNavigate, useParams } from 'react-router'
+import { useParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { ChevronLeft } from 'lucide-react'
 import { ChatAvatar } from '@/components/glass/chat-avatar'
 import { GlassPattern } from '@/components/glass/glass-background'
+import { useCloseChat } from '@/features/chats/use-close-chat'
 
 export function ChatPage() {
   const { t } = useTranslation()
   const { chatId = '' } = useParams()
-  const navigate = useNavigate()
+  const close = useCloseChat()
   // Название и данные чата подключаются в следующих задачах.
   const title = t('pages.chat.title')
 
@@ -17,7 +18,7 @@ export function ChatPage() {
       <header className="glass-bar absolute inset-x-0 top-0 z-20 flex h-[calc(4rem+env(safe-area-inset-top))] items-center gap-2 px-2 pt-[env(safe-area-inset-top)] md:px-4">
         <button
           type="button"
-          onClick={() => void navigate('/')}
+          onClick={close}
           aria-label={t('chats.backToList')}
           className="glass-press flex size-10 shrink-0 items-center justify-center rounded-full text-primary md:hidden"
         >

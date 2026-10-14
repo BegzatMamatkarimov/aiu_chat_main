@@ -5,13 +5,6 @@ import { PageSpinner } from '@/components/page-spinner'
 
 export const router = createBrowserRouter([
   {
-    path: '/prototypes/home',
-    hydrateFallbackElement: <PageSpinner />,
-    lazy: async () => ({
-      Component: (await import('@/prototypes/home/home-prototype')).HomePrototype,
-    }),
-  },
-  {
     path: '/',
     element: <RootLayout />,
     hydrateFallbackElement: <PageSpinner />,

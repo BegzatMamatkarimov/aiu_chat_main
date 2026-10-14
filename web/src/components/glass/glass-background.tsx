@@ -14,7 +14,7 @@ export function GlassBackground({ fixed = false, className }: { fixed?: boolean;
   )
 }
 
-/** Учебный SVG-узор поверх фона; цвет берётся из токена --pattern-color. */
+/** Узор поверх фона: орнамент «қошқар мүйіз» в светлой теме, учебный SVG-узор в тёмной (токены --pattern-*). */
 export function GlassPattern({ className }: { className?: string }) {
   return <div aria-hidden="true" className={cn('glass-pattern absolute inset-0', className)} />
 }

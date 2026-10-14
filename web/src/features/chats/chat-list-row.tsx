@@ -1,5 +1,6 @@
 import { Link } from 'react-router'
 import { ChatAvatar } from '@/components/glass/chat-avatar'
+import { FROM_LIST_STATE } from '@/features/chats/use-close-chat'
 import { initials } from '@/features/profile/initials'
 
 export type ChatListItem = {
@@ -14,6 +15,7 @@ export function ChatListRow({ chat, active }: { chat: ChatListItem; active: bool
   return (
     <Link
       to={`/c/${chat.id}`}
+      state={FROM_LIST_STATE}
       aria-current={active ? 'page' : undefined}
       className={`glass-press mb-0.5 flex w-full items-center gap-3 rounded-2xl px-2.5 py-2.5 text-left ${active ? 'glass-accent' : 'glass-row'}`}
     >
@@ -28,7 +30,7 @@ export function ChatListRow({ chat, active }: { chat: ChatListItem; active: bool
             {chat.preview}
           </span>
           {chat.unread > 0 && (
-            <span className="glass-badge flex h-[1.375rem] min-w-[1.375rem] shrink-0 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-semibold tabular-nums text-primary-foreground">
+            <span className="glass-badge flex h-[1.375rem] min-w-[1.375rem] shrink-0 items-center justify-center rounded-full px-1.5 text-xs font-semibold tabular-nums">
               {chat.unread}
             </span>
           )}

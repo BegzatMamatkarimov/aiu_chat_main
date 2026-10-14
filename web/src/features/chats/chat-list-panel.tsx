@@ -1,10 +1,9 @@
-import { useContext, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { useMatch } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'motion/react'
 import { MessagesSquare, Search } from 'lucide-react'
-import { ChatListDataContext } from '@/features/chats/chat-list-data'
-import { ChatListRow } from '@/features/chats/chat-list-row'
+import { ChatListRow, type ChatListItem } from '@/features/chats/chat-list-row'
 import { ProfileMenu } from '@/features/chats/profile-menu'
 import { EASE_OUT } from '@/lib/motion'
 import { useHeight } from '@/lib/use-height'
@@ -14,7 +13,8 @@ type Folder = (typeof FOLDERS)[number]
 
 export function ChatListPanel() {
   const { t } = useTranslation()
-  const chats = useContext(ChatListDataContext)
+  // Данные подключаются в задачах 4.3 (список) и 4.4 (поиск).
+  const chats: ChatListItem[] = []
   const [folder, setFolder] = useState<Folder>('all')
   const [query, setQuery] = useState('')
   const headRef = useRef<HTMLDivElement>(null)

@@ -4,7 +4,7 @@ export type Theme = 'system' | 'light' | 'dark'
 
 const STORAGE_KEY = 'aiu-theme'
 const DARK_QUERY = '(prefers-color-scheme: dark)'
-const THEME_COLORS = { light: '#f2f6fb', dark: '#0e141f' }
+const THEME_COLORS = { light: '#393085', dark: '#0e141f' }
 
 function isTheme(value: string | null): value is Theme {
   return value === 'system' || value === 'light' || value === 'dark'

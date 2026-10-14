@@ -1,28 +1,78 @@
 /* Оформление «Стекло». Все цвета светлой и тёмной темы — токены в двух блоках ниже. */
 
 :root {
-  --out-a: var(--primary);
-  --out-b: color-mix(in oklab, var(--primary) 78%, oklch(0.55 0.2 300));
-  --out-fg: oklch(1 0 0);
-  --in-bg: color-mix(in oklab, var(--card) 88%, transparent);
+  /* Орнамент «қошқар мүйіз» (маски): --orn-bg — тайл для фона, --orn-ribbon — лента под шапкой */
+  --orn-ribbon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='24' viewBox='0 0 48 24' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M24 23C24 16 19.5 12 14 12C9 12 5.5 15.5 7 19C8.2 21.7 11.8 21.6 12.6 19.3C13.2 17.5 11.4 16.3 10 17.2'/%3E%3Cpath d='M24 23C24 16 28.5 12 34 12C39 12 42.5 15.5 41 19C39.8 21.7 36.2 21.6 35.4 19.3C34.8 17.5 36.6 16.3 38 17.2'/%3E%3Cpath d='M24 2.5L27 6.2L24 9.9L21 6.2Z'/%3E%3Cpath d='M24 10.5V23'/%3E%3C/svg%3E");
+  --orn-bg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cg%3E%3Cpath d='M24 23C24 16 19.5 12 14 12C9 12 5.5 15.5 7 19C8.2 21.7 11.8 21.6 12.6 19.3C13.2 17.5 11.4 16.3 10 17.2'/%3E%3Cpath d='M24 23C24 16 28.5 12 34 12C39 12 42.5 15.5 41 19C39.8 21.7 36.2 21.6 35.4 19.3C34.8 17.5 36.6 16.3 38 17.2'/%3E%3Cpath d='M24 2.5L27 6.2L24 9.9L21 6.2Z'/%3E%3Cpath d='M24 10.5V23'/%3E%3C/g%3E%3Cg transform='translate(24 24)'%3E%3Cpath d='M24 23C24 16 19.5 12 14 12C9 12 5.5 15.5 7 19C8.2 21.7 11.8 21.6 12.6 19.3C13.2 17.5 11.4 16.3 10 17.2'/%3E%3Cpath d='M24 23C24 16 28.5 12 34 12C39 12 42.5 15.5 41 19C39.8 21.7 36.2 21.6 35.4 19.3C34.8 17.5 36.6 16.3 38 17.2'/%3E%3Cpath d='M24 2.5L27 6.2L24 9.9L21 6.2Z'/%3E%3Cpath d='M24 10.5V23'/%3E%3C/g%3E%3Cg transform='translate(-24 24)'%3E%3Cpath d='M24 23C24 16 19.5 12 14 12C9 12 5.5 15.5 7 19C8.2 21.7 11.8 21.6 12.6 19.3C13.2 17.5 11.4 16.3 10 17.2'/%3E%3Cpath d='M24 23C24 16 28.5 12 34 12C39 12 42.5 15.5 41 19C39.8 21.7 36.2 21.6 35.4 19.3C34.8 17.5 36.6 16.3 38 17.2'/%3E%3Cpath d='M24 2.5L27 6.2L24 9.9L21 6.2Z'/%3E%3Cpath d='M24 10.5V23'/%3E%3C/g%3E%3C/svg%3E");
 
-  --mesh-base: oklch(0.975 0.012 240);
-  --mesh-1: oklch(0.82 0.11 235);
-  --mesh-2: oklch(0.84 0.11 320);
-  --mesh-3: oklch(0.86 0.11 175);
-  --mesh-opacity: 0.6;
-  --pattern-color: color-mix(in oklab, var(--primary) 12%, transparent);
+  --out-a: #393085;
+  --out-b: #4a3fa6;
+  --out-fg: #fff;
+  --in-bg: #fff;
 
-  --glass-bar-bg: color-mix(in oklab, var(--background) 88%, transparent);
-  --glass-panel-bg: color-mix(in oklab, var(--background) 85%, transparent);
-  --glass-border: oklch(1 0 0 / 30%);
-  --glass-field-bg: color-mix(in oklab, var(--background) 50%, transparent);
-  --glass-field-border: oklch(1 0 0 / 40%);
-  --glass-seg-bg: color-mix(in oklab, var(--foreground) 6%, transparent);
-  --glass-seg-thumb-bg: color-mix(in oklab, var(--background) 80%, transparent);
-  --glass-seg-thumb-border: oklch(1 0 0 / 60%);
-  --glass-shadow: oklch(0 0 0 / 35%);
-  --glass-edge-shadow: oklch(0 0 0 / 12%);
+  --mesh-base: #f8f7fc;
+  --mesh-1: #ebe8f9;
+  --mesh-2: #f2f0fb;
+  --mesh-3: #e4f4f1;
+  --mesh-opacity: 0.5;
+  --pattern-color: rgb(57 48 133 / 6%);
+  --pattern-image: var(--orn-bg);
+  --pattern-size: 72px;
+
+  /* Шапки (список чатов, чат): сплошной индиго с белым текстом и лентой орнамента */
+  --bar-bg: linear-gradient(135deg, #393085 0%, #262157 100%);
+  --bar-fg: #fff;
+  --bar-muted: rgb(255 255 255 / 80%);
+  --bar-accent: #fff;
+  --bar-chip-bg: #fff;
+  --bar-chip-fg: #393085;
+  --bar-border: transparent;
+  --bar-blur: none;
+  --bar-ring: rgb(255 255 255 / 60%);
+  --bar-ribbon: #019384;
+
+  --glass-bar-bg: rgb(255 255 255 / 96%);
+  --glass-panel-bg: rgb(255 255 255 / 95%);
+  --glass-border: #e2e1ea;
+  --glass-field-bg: rgb(255 255 255 / 14%);
+  --glass-field-border: rgb(255 255 255 / 22%);
+  --glass-seg-bg: rgb(255 255 255 / 12%);
+  --glass-seg-thumb-bg: #fff;
+  --glass-seg-thumb-border: #fff;
+  --glass-shadow: rgb(38 33 87 / 25%);
+  --glass-edge-shadow: rgb(38 33 87 / 12%);
+
+  /* Аватары */
+  --av-l1: 0.52;
+  --av-c1: 0.12;
+  --av-l2: 0.42;
+  --av-c2: 0.13;
+  --av-dh: 20;
+
+  /* Пузыри, композер, мелочи чата */
+  --bubble-in-border: #e0dfea;
+  --bubble-in-shadow: 0 1px 2px rgb(38 33 87 / 8%), 0 6px 14px -8px rgb(38 33 87 / 25%);
+  --bubble-out-shadow: 0 8px 18px -10px rgb(38 33 87 / 65%);
+  --time-in: #66656d;
+  --time-out: #d9d5f5;
+  --link-in: #00796b;
+  --link-out: #a0f0e4;
+  --name-l: 0.42;
+  --name-c: 0.12;
+  --chip-bg: rgb(255 255 255 / 92%);
+  --chip-border: #e0dfea;
+  --chip-fg: #4a4952;
+  --composer-bg: #fff;
+  --composer-border: #dcdbe7;
+  --quote-in-bg: #f0eff8;
+  --quote-in-bar: #393085;
+  --quote-out-bg: oklch(1 0 0 / 15%);
+  --quote-out-bar: oklch(1 0 0 / 70%);
+  --voice-out-bg: oklch(1 0 0 / 20%);
+  --badge-bg: #017a6e;
+  --badge-fg: #fff;
+  --badge-on-accent-bg: #fff;
+  --badge-on-accent-fg: #393085;
 }
 
 .dark {
@@ -36,11 +86,58 @@
   --mesh-3: oklch(0.4 0.1 190);
   --mesh-opacity: 0.45;
   --pattern-color: oklch(1 0 0 / 7%);
+  /* Учебный узор (формулы, колба, книга) — только в тёмной теме */
+  --pattern-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260' viewBox='0 0 260 260' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 40q12-7 24 0q12-7 24 0v22q-12-7-24 0q-12-7-24 0zM42 40v22'/%3E%3Cpath d='M150 62l32-32l9 9l-32 32l-13 4zM178 34l9 9'/%3E%3Ctext x='72' y='122' font-family='Georgia,serif' font-size='20' font-style='italic' fill='black' stroke='none'%3EE=mc²%3C/text%3E%3Cpath d='M180 150l26-13l26 13l-26 13zM190 156v13q16 9 32 0v-13M232 150v15'/%3E%3Ccircle cx='46' cy='196' r='12'/%3E%3Cpath d='M40 212h12M42 217h8M46 184v-6M37 188l-4-4M55 188l4-4'/%3E%3Ctext x='112' y='214' font-family='Georgia,serif' font-size='30' fill='black' stroke='none'%3E∑%3C/text%3E%3Ctext x='200' y='232' font-family='Georgia,serif' font-size='26' font-style='italic' fill='black' stroke='none'%3Eπ%3C/text%3E%3Ctext x='20' y='120' font-family='Georgia,serif' font-size='14' fill='black' stroke='none'%3E√x%3C/text%3E%3Cpath d='M118 40h24M130 28v24M214 90h18M223 81v18M96 160l10 10M106 160l-10 10'/%3E%3Cpath d='M20 244l56-14l4 12l-56 14z M30 238l3 9M42 235l3 9M54 232l3 9'/%3E%3C/svg%3E");
+  --pattern-size: 260px;
 
+  --bar-bg: color-mix(in oklab, var(--background) 88%, transparent);
+  --bar-fg: var(--foreground);
+  --bar-muted: var(--muted-foreground);
+  --bar-accent: var(--primary);
+  --bar-chip-bg: linear-gradient(135deg, var(--out-a), var(--out-b));
+  --bar-chip-fg: var(--out-fg);
+  --bar-border: var(--glass-border);
+  --bar-blur: blur(40px);
+  --bar-ring: color-mix(in oklab, var(--primary) 40%, transparent);
+  --bar-ribbon: transparent;
+
+  --glass-bar-bg: color-mix(in oklab, var(--background) 88%, transparent);
+  --glass-panel-bg: color-mix(in oklab, var(--background) 85%, transparent);
   --glass-border: oklch(1 0 0 / 10%);
+  --glass-field-bg: color-mix(in oklab, var(--background) 50%, transparent);
   --glass-field-border: oklch(1 0 0 / 10%);
+  --glass-seg-bg: color-mix(in oklab, var(--foreground) 6%, transparent);
   --glass-seg-thumb-bg: oklch(1 0 0 / 10%);
   --glass-seg-thumb-border: oklch(1 0 0 / 10%);
+  --glass-shadow: oklch(0 0 0 / 35%);
+  --glass-edge-shadow: oklch(0 0 0 / 12%);
+
+  --av-l1: 0.7;
+  --av-c1: 0.13;
+  --av-l2: 0.54;
+  --av-c2: 0.15;
+  --av-dh: 25;
+
+  --bubble-in-border: oklch(1 0 0 / 10%);
+  --bubble-in-shadow: 0 4px 14px -6px rgb(0 0 0 / 35%);
+  --bubble-out-shadow: 0 8px 18px -8px var(--out-b);
+  --time-in: var(--muted-foreground);
+  --time-out: oklch(1 0 0 / 80%);
+  --link-in: var(--primary);
+  --link-out: oklch(1 0 0);
+  --name-l: 0.8;
+  --name-c: 0.12;
+  --chip-bg: color-mix(in oklab, var(--background) 80%, transparent);
+  --chip-border: var(--glass-border);
+  --chip-fg: color-mix(in oklab, var(--foreground) 80%, transparent);
+  --composer-bg: var(--glass-panel-bg);
+  --composer-border: var(--glass-border);
+  --quote-in-bg: color-mix(in oklab, var(--primary) 8%, transparent);
+  --quote-in-bar: var(--primary);
+  --badge-bg: var(--primary);
+  --badge-fg: var(--primary-foreground);
+  --badge-on-accent-bg: var(--primary);
+  --badge-on-accent-fg: var(--primary-foreground);
 }
 
 /* ---------- Мобильная база ---------- */
@@ -93,22 +190,40 @@ button, [role="tab"] {
   }
 }
 
+/* Узор поверх фона: маска --pattern-image (орнамент в светлой теме, учебный узор в тёмной), цвет — --pattern-color */
 .glass-pattern {
   pointer-events: none;
   background: var(--pattern-color);
-  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260' viewBox='0 0 260 260' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 40q12-7 24 0q12-7 24 0v22q-12-7-24 0q-12-7-24 0zM42 40v22'/%3E%3Cpath d='M150 62l32-32l9 9l-32 32l-13 4zM178 34l9 9'/%3E%3Ctext x='72' y='122' font-family='Georgia,serif' font-size='20' font-style='italic' fill='black' stroke='none'%3EE=mc²%3C/text%3E%3Cpath d='M180 150l26-13l26 13l-26 13zM190 156v13q16 9 32 0v-13M232 150v15'/%3E%3Ccircle cx='46' cy='196' r='12'/%3E%3Cpath d='M40 212h12M42 217h8M46 184v-6M37 188l-4-4M55 188l4-4'/%3E%3Ctext x='112' y='214' font-family='Georgia,serif' font-size='30' fill='black' stroke='none'%3E∑%3C/text%3E%3Ctext x='200' y='232' font-family='Georgia,serif' font-size='26' font-style='italic' fill='black' stroke='none'%3Eπ%3C/text%3E%3Ctext x='20' y='120' font-family='Georgia,serif' font-size='14' fill='black' stroke='none'%3E√x%3C/text%3E%3Cpath d='M118 40h24M130 28v24M214 90h18M223 81v18M96 160l10 10M106 160l-10 10'/%3E%3Cpath d='M20 244l56-14l4 12l-56 14z M30 238l3 9M42 235l3 9M54 232l3 9'/%3E%3C/svg%3E");
-  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260' viewBox='0 0 260 260' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 40q12-7 24 0q12-7 24 0v22q-12-7-24 0q-12-7-24 0zM42 40v22'/%3E%3Cpath d='M150 62l32-32l9 9l-32 32l-13 4zM178 34l9 9'/%3E%3Ctext x='72' y='122' font-family='Georgia,serif' font-size='20' font-style='italic' fill='black' stroke='none'%3EE=mc²%3C/text%3E%3Cpath d='M180 150l26-13l26 13l-26 13zM190 156v13q16 9 32 0v-13M232 150v15'/%3E%3Ccircle cx='46' cy='196' r='12'/%3E%3Cpath d='M40 212h12M42 217h8M46 184v-6M37 188l-4-4M55 188l4-4'/%3E%3Ctext x='112' y='214' font-family='Georgia,serif' font-size='30' fill='black' stroke='none'%3E∑%3C/text%3E%3Ctext x='200' y='232' font-family='Georgia,serif' font-size='26' font-style='italic' fill='black' stroke='none'%3Eπ%3C/text%3E%3Ctext x='20' y='120' font-family='Georgia,serif' font-size='14' fill='black' stroke='none'%3E√x%3C/text%3E%3Cpath d='M118 40h24M130 28v24M214 90h18M223 81v18M96 160l10 10M106 160l-10 10'/%3E%3Cpath d='M20 244l56-14l4 12l-56 14z M30 238l3 9M42 235l3 9M54 232l3 9'/%3E%3C/svg%3E");
-  -webkit-mask-size: 260px 260px;
-  mask-size: 260px 260px;
+  -webkit-mask-image: var(--pattern-image);
+  mask-image: var(--pattern-image);
+  -webkit-mask-size: var(--pattern-size) var(--pattern-size);
+  mask-size: var(--pattern-size) var(--pattern-size);
 }
 
 /* ---------- Стеклянные поверхности ---------- */
 @layer components {
   .glass-bar {
-    background: var(--glass-bar-bg);
-    border-bottom: 1px solid var(--glass-border);
-    -webkit-backdrop-filter: blur(40px);
-    backdrop-filter: blur(40px);
+    background: var(--bar-bg);
+    color: var(--bar-fg);
+    border-bottom: 1px solid var(--bar-border);
+    -webkit-backdrop-filter: var(--bar-blur);
+    backdrop-filter: var(--bar-blur);
+  }
+  /* Лента орнамента под шапкой (в тёмной теме прозрачна) */
+  .glass-bar::after {
+    content: "";
+    position: absolute;
+    inset: 100% 0 auto 0;
+    height: 14px;
+    background: var(--bar-ribbon);
+    opacity: 0.85;
+    pointer-events: none;
+    -webkit-mask-image: var(--orn-ribbon);
+    mask-image: var(--orn-ribbon);
+    -webkit-mask-repeat: repeat-x;
+    mask-repeat: repeat-x;
+    -webkit-mask-size: 28px 14px;
+    mask-size: 28px 14px;
   }
   .glass-panel {
     background: var(--glass-panel-bg);
@@ -149,7 +264,11 @@ button, [role="tab"] {
   }
 
   .glass-av {
-    background: linear-gradient(135deg, oklch(0.7 0.13 var(--h)), oklch(0.54 0.15 calc(var(--h) + 25)));
+    background: linear-gradient(
+      135deg,
+      oklch(var(--av-l1) var(--av-c1) var(--h)),
+      oklch(var(--av-l2) var(--av-c2) calc(var(--h) + var(--av-dh)))
+    );
     color: var(--out-fg);
   }
 
@@ -172,4 +291,88 @@ button, [role="tab"] {
 .glass-scroll {
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
+}
+
+/* Элементы внутри шапки берут цвета из --bar-* (в тёмной теме совпадают с обычными) */
+.glass-bar .text-muted-foreground {
+  color: var(--bar-muted);
+}
+.glass-bar .text-primary {
+  color: var(--bar-accent);
+}
+.glass-bar .glass-accent {
+  background: var(--bar-chip-bg);
+  color: var(--bar-chip-fg);
+}
+.glass-bar .glass-field input {
+  color: var(--bar-fg);
+}
+.glass-bar .glass-field input::placeholder {
+  color: var(--bar-muted);
+}
+.glass-bar .glass-field:focus-within {
+  --tw-ring-color: var(--bar-ring);
+}
+
+/* ---------- Пузыри и мелочи чата ---------- */
+.glass-bubble {
+  position: relative;
+  min-width: 0;
+}
+@media (pointer: coarse) {
+  .glass-bubble {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+}
+.glass-bubble-out {
+  background: linear-gradient(135deg, var(--out-a), var(--out-b));
+  color: var(--out-fg);
+  box-shadow: var(--bubble-out-shadow);
+}
+.glass-bubble-in {
+  background: var(--in-bg);
+  color: var(--foreground);
+  border: 1px solid var(--bubble-in-border);
+  box-shadow: var(--bubble-in-shadow);
+}
+.glass-bubble-out .glass-time { color: var(--time-out); }
+.glass-bubble-in .glass-time { color: var(--time-in); }
+.glass-bubble-out .glass-link { color: var(--link-out); }
+.glass-bubble-in .glass-link { color: var(--link-in); }
+.glass-bubble-out .glass-quote {
+  background: var(--quote-out-bg);
+  border-left: 3px solid var(--quote-out-bar);
+}
+.glass-bubble-in .glass-quote {
+  background: var(--quote-in-bg);
+  border-left: 3px solid var(--quote-in-bar);
+  color: var(--foreground);
+}
+.glass-bubble-out .glass-voice-btn { background: var(--voice-out-bg); }
+.glass-bubble-in .glass-voice-btn { background: var(--primary); color: var(--primary-foreground); }
+.glass-name { color: oklch(var(--name-l) var(--name-c) var(--h)); }
+.glass-chip {
+  background: var(--chip-bg);
+  border: 1px solid var(--chip-border);
+  color: var(--chip-fg);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+.glass-composer {
+  background: var(--composer-bg);
+  border: 1px solid var(--composer-border);
+  box-shadow: 0 12px 32px -14px var(--glass-shadow);
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
+}
+/* Счётчик непрочитанных (бирюза в светлой теме); в активной строке — инверсия */
+.glass-badge {
+  background: var(--badge-bg);
+  color: var(--badge-fg);
+}
+.glass-accent .glass-badge {
+  background: var(--badge-on-accent-bg);
+  color: var(--badge-on-accent-fg);
 }

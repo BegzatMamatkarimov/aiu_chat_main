@@ -14,5 +14,31 @@
     "system": "System",
     "light": "Light",
     "dark": "Dark"
+  },
+  "pages": {
+    "home": {
+      "title": "Home"
+    },
+    "chat": {
+      "title": "Chat"
+    },
+    "join": {
+      "title": "Join group"
+    },
+    "login": {
+      "title": "Sign in"
+    },
+    "settings": {
+      "title": "Settings"
+    },
+    "notFound": {
+      "title": "Page not found",
+      "back": "Back to home"
+    }
+  },
+  "nav": {
+    "home": "Home",
+    "login": "Sign in",
+    "settings": "Settings"
   }
 }

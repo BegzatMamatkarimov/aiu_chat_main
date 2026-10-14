@@ -59,3 +59,10 @@ supabase/         миграции БД (migrations/), демо-данные (se
 ## Деплой
 
 Vercel собирает проект из папки `web` (Root Directory = `web`). Все пути отдаются через `index.html` (`web/vercel.json`), поэтому прямые ссылки вроде `/c/demo` открываются без 404.
+
+Production-деплой создаётся автоматически при каждом пуше в ветку `claude/laughing-davinci-x4qz6l` (сейчас это production-ветка проекта на Vercel).
+
+Если сайт перестал открываться («you don't have a production deployment»):
+1. Vercel → **Deployments** → у последнего деплоя со статусом Ready: **⋯ → Promote to Production** (или **Redeploy**).
+2. Либо сделать любой пуш в production-ветку — Vercel соберёт и опубликует сайт заново.
+3. Проверить: **Settings → Domains** — `aiuchatmain-web.vercel.app` привязан к Production; сайт открывается в режиме инкогнито без входа в Vercel.

@@ -1,12 +1,15 @@
 import { createBrowserRouter } from 'react-router'
 import { RootLayout } from '@/app/root-layout'
 import { RequireAuth, RedirectIfAuthed } from '@/app/guards'
+import { NotFoundPage } from '@/app/not-found-page'
+import { RouteErrorPage } from '@/app/route-error-page'
 import { PageSpinner } from '@/components/page-spinner'
 
 export const router = createBrowserRouter([
   {
     path: '/',
     element: <RootLayout />,
+    errorElement: <RouteErrorPage />,
     hydrateFallbackElement: <PageSpinner />,
     children: [
       {
@@ -60,7 +63,7 @@ export const router = createBrowserRouter([
       },
       {
         path: '*',
-        lazy: async () => ({ Component: (await import('@/app/not-found-page')).NotFoundPage }),
+        Component: NotFoundPage,
       },
     ],
   },

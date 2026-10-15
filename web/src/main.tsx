@@ -9,6 +9,9 @@ import { ThemeProvider } from '@/app/theme-provider'
 import { queryClient } from '@/app/query-client'
 import { AuthProvider } from '@/features/auth/auth-provider'
 import { router } from '@/app/router'
+import { installChunkReloadHandler } from '@/app/chunk-reload'
+
+installChunkReloadHandler()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

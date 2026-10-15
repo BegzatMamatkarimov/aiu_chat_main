@@ -32,6 +32,12 @@
       "title": "Page not found",
       "back": "Back to home"
     },
+    "loadError": {
+      "title": "Couldn't load the page",
+      "generic": "Something went wrong",
+      "hint": "Check your internet connection",
+      "reload": "Refresh"
+    },
     "onboarding": {
       "title": "Tell us about yourself"
     }

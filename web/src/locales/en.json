@@ -208,7 +208,8 @@
     "menu": {
       "label": "Group menu",
       "invite": "Invite via link",
-      "leave": "Leave group"
+      "leave": "Leave group",
+      "info": "Group info"
     },
     "invite": {
       "shareText": "Join the group “{{name}}” in AIU Chat",
@@ -225,7 +226,8 @@
       "done": "You left the group “{{name}}”",
       "error": "Couldn’t leave the group. Please try again"
     },
-    "privateGroup": "Private group"
+    "privateGroup": "Private group",
+    "openInfo": "Group info: {{name}}"
   },
   "join": {
     "action": "Join",
@@ -234,5 +236,41 @@
     "error": "Couldn’t join the group. Please try again",
     "invalid": "The invitation is invalid or has expired",
     "loadError": "Couldn’t load the invitation"
+  },
+  "group": {
+    "info": {
+      "title": "Group info",
+      "back": "Back to chat",
+      "edit": "Edit group",
+      "public": "Public group",
+      "invite": "Invite link",
+      "copy": "Copy",
+      "share": "Share",
+      "members": "Members",
+      "membersError": "Couldn’t load members",
+      "you": "You",
+      "admin": "admin",
+      "noName": "No name",
+      "memberMenu": "Actions for {{name}}",
+      "makeAdmin": "Make admin",
+      "revokeAdmin": "Remove admin rights",
+      "remove": "Remove from group",
+      "madeAdmin": "{{name}} is now an admin",
+      "revokedAdmin": "{{name}} is no longer an admin",
+      "removed": "{{name}} was removed from the group",
+      "removeTitle": "Remove {{name}} from “{{group}}”?",
+      "removeBody": "They will no longer see the chat. They can come back via an invite link, or via search if the group is public.",
+      "removeConfirm": "Remove",
+      "errors": {
+        "lastAdmin": "The group must keep at least one admin",
+        "generic": "Couldn’t complete the action. Please try again"
+      }
+    },
+    "edit": {
+      "title": "Edit group",
+      "submit": "Save",
+      "saved": "Group updated",
+      "error": "Couldn’t save. Please try again"
+    }
   }
 }

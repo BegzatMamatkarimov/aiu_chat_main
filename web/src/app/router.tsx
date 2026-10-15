@@ -40,6 +40,14 @@ export const router = createBrowserRouter([
               {
                 path: 'c/:chatId',
                 lazy: async () => ({ Component: (await import('@/features/messages/chat-page')).ChatPage }),
+                children: [
+                  {
+                    path: 'info',
+                    lazy: async () => ({
+                      Component: (await import('@/features/messages/group-info-page')).GroupInfoPage,
+                    }),
+                  },
+                ],
               },
             ],
           },

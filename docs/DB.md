@@ -103,8 +103,17 @@ PK (user_a, user_b), check user_a < user_b; chat_id unique → chats on delete c
 | `mark_read(chat_id)` | last_read_at = now() для себя | участник |
 | `search_public_groups(q text, lim int default 20)` | публичные группы по похожести названия + member_count + is_member | — |
 | `list_my_chats()` | мои чаты: последнее сообщение (текст или тип вложения), unread_count, для direct — профиль собеседника; сортировка по last_message_at desc | — |
-| `get_group_by_code(code) → table(id, name, description, avatar_url, member_count, is_member)` | превью группы для `/join/<code>`; работает и для непубличных групп (код и есть доступ); `invite_code` не возвращает; неверный код — пустой результат | только type='group' |
+| `get_group_by_code(code) → table(id, name, description, avatar_url, member_count, is_member, is_public)` | превью группы для `/join/<code>` (`is_public` — для подписи «Приватная группа»); работает и для непубличных групп (код и есть доступ); `invite_code` не возвращает; неверный код — пустой результат | только type='group' |
 | `leave_chat(chat_id)` | выход из группы; если уходит последний admin и участники остаются, admin становится участник с самым ранним `joined_at` (при равенстве — меньший `user_id`); строки участников блокируются; пустая группа остаётся | только type='group'; вызывающий — участник |
+
+## Роли и состав группы (этап 4.7)
+
+Отдельных RPC нет, всё через RLS:
+- смена роли участника — `update chat_members set role` (admin; себе роль менять нельзя, `with check user_id <> auth.uid()`);
+- удаление участника — `delete from chat_members` (admin);
+- название, описание, тип — `update chats set name, description, is_public` (admin группы).
+
+Триггеры `chat_members_keep_admin_upd` / `chat_members_keep_admin_del` (функция `ensure_group_has_admin`, срабатывает после оператора) хранят инвариант: если в группе остались участники, в ней есть admin. Нарушение — ошибка `55000` (`group must keep an admin`). `leave_chat` сначала повышает преемника, потом удаляет себя, поэтому не мешает. Каскадное удаление группы или профиля тоже не блокируется.
 
 Файлы вложений из Storage на этапе 1 не удаляются. Очистку добавим позже.
 

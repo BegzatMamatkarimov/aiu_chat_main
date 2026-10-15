@@ -1,12 +1,16 @@
-import { useParams } from 'react-router'
+import { useMatch, useNavigate, useParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { ChevronLeft, Lock, MessageCircleOff } from 'lucide-react'
 import { ChatAvatar } from '@/components/glass/chat-avatar'
 import { GlassPattern } from '@/components/glass/glass-background'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import { useCloseChat } from '@/features/chats/use-close-chat'
 import { useChatHeader, useMemberCount, type ChatHeader } from '@/features/chats/use-chat-header'
 import { GroupMenu } from '@/features/messages/group-menu'
+import { HEADER_CLASS } from '@/features/messages/header-class'
+import { InfoLayer } from '@/features/messages/info-layer'
+import { FROM_CHAT_STATE } from '@/features/messages/use-close-info'
 import { initials } from '@/features/profile/initials'
 import { useCourseLabel } from '@/features/profile/course'
 
@@ -24,9 +28,6 @@ function BackButton() {
     </button>
   )
 }
-
-const HEADER_CLASS =
-  'glass-bar absolute inset-x-0 top-0 z-20 flex h-[calc(4rem+env(safe-area-inset-top))] items-center gap-2 px-2 pt-[env(safe-area-inset-top)] md:px-4'
 
 function Subtitle({ chat }: { chat: ChatHeader }) {
   const { t } = useTranslation()
@@ -46,28 +47,51 @@ export function ChatPage() {
   const { t } = useTranslation()
   const { chatId = '' } = useParams()
   const close = useCloseChat()
+  const navigate = useNavigate()
   const state = useChatHeader(chatId)
+  const infoOpen = useMatch('/c/:chatId/info') !== null
 
   if (state.status === 'ready') {
     const { chat } = state
+    const isGroup = chat.type === 'group'
+    const heading = (
+      <>
+        <ChatAvatar chatId={chat.id} label={initials(chat.title)} src={chat.avatarUrl} size={40} side="header" />
+        <div className="min-w-0 flex-1">
+          <div className="flex min-w-0 items-center gap-1.5">
+            <h2 className="truncate text-base font-semibold leading-tight">{chat.title}</h2>
+            {chat.isPrivate && <Lock aria-hidden="true" className="size-3.5 shrink-0 text-muted-foreground" />}
+          </div>
+          <Subtitle chat={chat} />
+        </div>
+      </>
+    )
     return (
       <div className="relative h-full overflow-hidden">
-        <GlassPattern />
-        <header className={HEADER_CLASS}>
-          <BackButton />
-          <ChatAvatar chatId={chat.id} label={initials(chat.title)} src={chat.avatarUrl} size={40} side="header" />
-          <div className="min-w-0 flex-1">
-            <div className="flex min-w-0 items-center gap-1.5">
-              <h2 className="truncate text-base font-semibold leading-tight">{chat.title}</h2>
-              {chat.isPrivate && <Lock aria-hidden="true" className="size-3.5 shrink-0 text-muted-foreground" />}
-            </div>
-            <Subtitle chat={chat} />
+        {/* Пока открыт «О группе», чат под ним недоступен; на десктопе его не видно совсем. */}
+        <div className={cn('absolute inset-0', infoOpen && 'md:invisible')} inert={infoOpen}>
+          <GlassPattern />
+          <header className={HEADER_CLASS}>
+            <BackButton />
+            {isGroup ? (
+              <button
+                type="button"
+                onClick={() => void navigate(`/c/${chat.id}/info`, { state: FROM_CHAT_STATE })}
+                aria-label={t('chat.openInfo', { name: chat.title })}
+                className="glass-press -my-1 flex min-w-0 flex-1 items-center gap-2 rounded-xl py-1 text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+              >
+                {heading}
+              </button>
+            ) : (
+              heading
+            )}
+            {isGroup && <GroupMenu chatId={chat.id} title={chat.title} />}
+          </header>
+          <div className="absolute inset-0 flex items-center justify-center px-4 pt-[calc(4rem+env(safe-area-inset-top))]">
+            <p className="glass-pill relative rounded-full px-4 py-1.5 text-sm text-muted-foreground">{t('chat.soon')}</p>
           </div>
-          {chat.type === 'group' && <GroupMenu chatId={chat.id} title={chat.title} />}
-        </header>
-        <div className="absolute inset-0 flex items-center justify-center px-4 pt-[calc(4rem+env(safe-area-inset-top))]">
-          <p className="glass-pill relative rounded-full px-4 py-1.5 text-sm text-muted-foreground">{t('chat.soon')}</p>
         </div>
+        <InfoLayer />
       </div>
     )
   }

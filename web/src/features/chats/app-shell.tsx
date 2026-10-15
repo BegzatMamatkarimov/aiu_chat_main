@@ -30,7 +30,7 @@ function useViewportWidth() {
 /** Каркас: на десктопе список и чат рядом, на телефоне экраны по очереди со сдвигом справа. */
 export function AppShell() {
   const desktop = useIsDesktop()
-  const open = useMatch('/c/:chatId') !== null
+  const open = useMatch('/c/:chatId/*') !== null
 
   return (
     <div className="h-dvh overflow-hidden pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">

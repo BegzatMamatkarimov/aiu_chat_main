@@ -342,6 +342,7 @@ export type Database = {
           avatar_url: string | null
           member_count: number
           is_member: boolean
+          is_public: boolean
         }[]
       }
       get_or_create_direct_chat: {

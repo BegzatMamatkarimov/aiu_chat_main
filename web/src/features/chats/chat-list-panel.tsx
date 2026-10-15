@@ -98,7 +98,7 @@ export function ChatListPanel() {
   const headRef = useRef<HTMLDivElement>(null)
   const headH = useHeight(headRef)
   const navigate = useNavigate()
-  const activeId = useMatch('/c/:chatId')?.params.chatId
+  const activeId = useMatch('/c/:chatId/*')?.params.chatId
   const trimmed = query.trim()
   const searching = trimmed.length > 0
   const groupSearch = trimmed.length >= MIN_GROUP_QUERY

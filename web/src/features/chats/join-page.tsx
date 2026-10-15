@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
-import { Loader2, LinkIcon } from 'lucide-react'
+import { Loader2, LinkIcon, Lock } from 'lucide-react'
 import { CenteredPage } from '@/components/glass/centered-page'
 import { ChatAvatar } from '@/components/glass/chat-avatar'
 import { GlassCard } from '@/components/glass/glass-card'
@@ -71,7 +71,13 @@ export function JoinPage() {
         {group.description && (
           <p className="mt-2 line-clamp-3 max-w-full whitespace-pre-line break-words text-sm text-muted-foreground">{group.description}</p>
         )}
-        <p className="mt-2 text-sm text-muted-foreground">{t('chat.members', { count: group.memberCount })}</p>
+        <p className="mt-2 flex max-w-full items-center justify-center gap-1.5 text-sm text-muted-foreground">
+          {!group.isPublic && <Lock aria-hidden="true" className="size-4 shrink-0" />}
+          <span className="truncate">
+            {!group.isPublic && `${t('chat.privateGroup')} · `}
+            {t('chat.members', { count: group.memberCount })}
+          </span>
+        </p>
         {group.isMember ? (
           <Button type="button" size="lg" className="mt-6 h-11 w-full text-base" onClick={() => open(group.id)}>
             {t('join.open')}

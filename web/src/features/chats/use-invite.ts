@@ -10,6 +10,7 @@ export type GroupPreview = {
   avatarUrl: string | null
   memberCount: number
   isMember: boolean
+  isPublic: boolean
 }
 
 /** Превью группы по коду приглашения; null — код недействителен. */
@@ -28,6 +29,7 @@ export function useGroupPreview(code: string) {
         avatarUrl: g.avatar_url,
         memberCount: Number(g.member_count) || 0,
         isMember: g.is_member,
+        isPublic: g.is_public !== false,
       }
     },
     retry: false,

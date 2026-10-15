@@ -179,7 +179,7 @@ export function useMessageTouch(ref: RefObject<HTMLElement | null>, options: Opt
           vibrate(10)
           latest.current.onLongPress(msgId, bubble)
         }, LONG_PRESS_MS)
-        if (!latest.current.reduce) {
+        if (!latest.current.reduce && !touchDebug.flags.nopress) {
           // Плавное вжатие за оставшееся до порога время, только transform.
           next.pressTimer = window.setTimeout(() => {
             if (g !== next || next.mode !== 'pending') return

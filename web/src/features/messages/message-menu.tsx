@@ -5,6 +5,8 @@ import { cn } from '@/lib/utils'
 import type { ChatMessage } from '@/features/messages/message-model'
 import { touchDebug } from '@/features/messages/touch-debug'
 
+const { flags } = touchDebug
+
 const QUICK_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🙏'] as const
 /** Реакция двойного тапа. */
 export const HEART_REACTION = QUICK_REACTIONS[1]
@@ -133,6 +135,10 @@ export function MessageMenu({ anchor, scroller, mine, via, myReactions, items, o
     setLayout(compute(anchor, scroller, mine, barRef.current, list))
   }, [anchor, scroller, mine])
 
+  useLayoutEffect(() => {
+    touchDebug.mark('commit')
+  }, [])
+
   const hasBar = myReactions !== null
   useLayoutEffect(() => {
     measure()
@@ -179,11 +185,11 @@ export function MessageMenu({ anchor, scroller, mine, via, myReactions, items, o
   const placed = layout !== null
   useEffect(() => {
     if (!placed) return
-    touchDebug.menuPlaced()
+    touchDebug.menuPlaced(scroller)
     const root = rootRef.current
     if (via === 'key') root?.querySelector<HTMLElement>('button')?.focus({ preventScroll: true })
     else root?.focus({ preventScroll: true })
-  }, [placed, via])
+  }, [placed, via, scroller])
 
   // Esc закрывает; при закрытии фокус возвращается на пузырь.
   useEffect(() => {
@@ -229,6 +235,9 @@ export function MessageMenu({ anchor, scroller, mine, via, myReactions, items, o
       ? { left: p.left, top: p.top, transformOrigin: `${p.ox}px ${p.oy}px` }
       : { left: 0, top: 0, visibility: 'hidden' }
 
+  const surface = cn(!flags.nosurface && 'glass-menu-surface', !flags.noanim && 'glass-menu-pop')
+  const flat: CSSProperties | undefined = flags.nosurface ? { background: 'var(--background)', border: '1px solid var(--glass-border)' } : undefined
+
   return createPortal(
     <div
       ref={rootRef}
@@ -244,11 +253,11 @@ export function MessageMenu({ anchor, scroller, mine, via, myReactions, items, o
       }}
       onKeyDown={onKeyDown}
     >
-      {dim && layout && (
+      {dim && layout && !flags.noscrim && (
         <div
           aria-hidden="true"
-          className="glass-menu-scrim glass-menu-fade pointer-events-none fixed inset-0"
-          style={{ clipPath: spotClip(layout.spot) }}
+          className={cn('glass-menu-scrim pointer-events-none fixed inset-0', !flags.noanim && 'glass-menu-fade')}
+          style={flags.noclip ? undefined : { clipPath: spotClip(layout.spot) }}
         />
       )}
       {myReactions && (
@@ -256,8 +265,8 @@ export function MessageMenu({ anchor, scroller, mine, via, myReactions, items, o
           ref={barRef}
           role="group"
           aria-label={t('chat.msgMenu.reactions')}
-          className="glass-menu-surface glass-menu-pop fixed flex gap-0.5 rounded-full p-1.5"
-          style={place(layout?.bar)}
+          className={cn('fixed flex gap-0.5 p-1.5', surface, !flags.nosurface && 'rounded-full')}
+          style={{ ...place(layout?.bar), ...flat }}
         >
           {QUICK_REACTIONS.map((emoji) => (
             <button
@@ -276,8 +285,9 @@ export function MessageMenu({ anchor, scroller, mine, via, myReactions, items, o
         ref={listRef}
         role="menu"
         aria-label={t('chat.msgMenu.label')}
-        className="glass-menu-surface glass-menu-pop fixed w-[min(14rem,calc(100vw-1rem))] overflow-hidden rounded-2xl py-1"
-        style={place(layout?.list)}
+        className={cn('fixed w-[min(14rem,calc(100vw-1rem))] overflow-hidden py-1', surface, !flags.nosurface && 'rounded-2xl')}
+        style={{ ...place(layout?.list), ...flat }}
+        onAnimationEnd={() => touchDebug.mark('done')}
       >
         {items.map((item) => (
           <button
@@ -317,7 +327,17 @@ type HostProps = {
 export function MessageMenuHost({ ref, messages, myId, buildItems, onReact }: HostProps) {
   const [menu, setMenu] = useState<MenuOpen | null>(null)
   const close = useCallback(() => setMenu(null), [])
-  useImperativeHandle(ref, () => ({ open: (s) => setMenu((cur) => (cur && cur.id === s.id ? cur : s)), close }), [close])
+  useImperativeHandle(
+    ref,
+    () => ({
+      open: (s) => {
+        touchDebug.mark('open')
+        setMenu((cur) => (cur && cur.id === s.id ? cur : s))
+      },
+      close,
+    }),
+    [close],
+  )
 
   const msg = menu ? messages.find((m) => m.id === menu.id) : undefined
   if (!menu || !msg || msg.deleted)

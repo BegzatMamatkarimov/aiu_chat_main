@@ -163,11 +163,15 @@ function CreateGroupForm({
           {TYPES.map(({ value, key, Icon }) => (
             <label
               key={key}
+              htmlFor={`group-type-${key}`}
               className="glass-press relative flex min-w-0 cursor-pointer items-center gap-2 rounded-2xl border border-foreground/10 px-3 py-2.5 text-sm font-medium has-[:checked]:border-primary has-[:checked]:bg-primary/10 has-[:checked]:text-primary has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring"
             >
               <input
+                id={`group-type-${key}`}
                 type="radio"
                 name="group-type"
+                aria-labelledby={`group-type-${key}-label`}
+                aria-describedby="group-type-hint"
                 checked={isPublic === value}
                 onChange={() => {
                   setIsPublic(value)
@@ -176,7 +180,9 @@ function CreateGroupForm({
                 className="sr-only"
               />
               <Icon aria-hidden="true" className="size-4 shrink-0" />
-              <span className="truncate">{t(`chats.create.${key}`)}</span>
+              <span id={`group-type-${key}-label`} className="truncate">
+                {t(`chats.create.${key}`)}
+              </span>
             </label>
           ))}
         </div>
@@ -187,7 +193,7 @@ function CreateGroupForm({
             {t('chats.create.error')}
           </p>
         )}
-        <DialogDescription className="text-xs">{t(isPublic ? 'chats.create.publicHint' : 'chats.create.privateHint')}</DialogDescription>
+        <DialogDescription id="group-type-hint" className="text-xs">{t(isPublic ? 'chats.create.publicHint' : 'chats.create.privateHint')}</DialogDescription>
         <Button type="submit" size="lg" disabled={pending} className="h-11 w-full text-base">
           {pending && <Loader2 className="animate-spin" />}
           {t('chats.create.submit')}
@@ -266,6 +272,7 @@ export function CreateGroupDialog({
             <DialogContent
               asChild
               forceMount
+              aria-describedby="group-type-hint"
               onOpenAutoFocus={(e) => {
                 e.preventDefault()
                 nameRef.current?.focus({ preventScroll: true })

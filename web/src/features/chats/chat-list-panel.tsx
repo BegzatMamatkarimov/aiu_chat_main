@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useMatch, useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
-import { motion } from 'motion/react'
+import { animate, motion, useMotionValue, useReducedMotion, useTransform } from 'motion/react'
 import { CircleAlert, MessagesSquare, Search, SquarePen } from 'lucide-react'
 import { toast } from 'sonner'
 import { copyText, inviteUrl } from '@/features/chats/invite-link'
@@ -24,7 +24,9 @@ import {
 } from '@/features/chats/use-public-groups'
 import { useMyChats, usePrivateGroupIds } from '@/features/chats/use-my-chats'
 import { EASE_OUT } from '@/lib/motion'
+import { useFolderSwipe } from '@/features/chats/use-folder-swipe'
 import { useHeight } from '@/lib/use-height'
+import { useIsDesktop } from '@/lib/use-media-query'
 
 const FOLDERS = ['all', 'subject', 'direct'] as const
 type Folder = (typeof FOLDERS)[number]
@@ -85,6 +87,12 @@ export function ChatListPanel() {
   const { user } = useAuth()
   const list = useMyChats()
   const [folder, setFolder] = useState<Folder>('all')
+  const folderIndex = FOLDERS.indexOf(folder)
+  const reduce = !!useReducedMotion()
+  const desktop = useIsDesktop()
+  const pos = useMotionValue(0)
+  const thumbX = useTransform(pos, (p) => `${p * 100}%`)
+  const trackX = useTransform(pos, (p) => `${(-p / FOLDERS.length) * 100}%`)
   const [query, setQuery] = useState('')
   const [creating, setCreating] = useState(false)
   const headRef = useRef<HTMLDivElement>(null)
@@ -98,10 +106,10 @@ export function ChatListPanel() {
   const lang = i18n.language
 
   const privateIds = usePrivateGroupIds()
-  const visible = useMemo<ChatListItem[]>(
-    () =>
+  const byFolder = useMemo(() => {
+    const items = (f: Folder): ChatListItem[] =>
       (list.data ?? [])
-        .filter((c) => (folder === 'all' || (folder === 'subject' ? c.type === 'group' : c.type === 'direct')) && matchesQuery(c, query))
+        .filter((c) => (f === 'all' || (f === 'subject' ? c.type === 'group' : c.type === 'direct')) && matchesQuery(c, query))
         .map((c) => ({
           id: c.id,
           title: chatTitle(c),
@@ -110,9 +118,9 @@ export function ChatListPanel() {
           unread: c.unread,
           avatarUrl: c.type === 'direct' ? c.peer?.avatarUrl : c.avatarUrl,
           isPrivate: privateIds.has(c.id),
-        })),
-    [list.data, folder, query, meId, t, lang, privateIds],
-  )
+        }))
+    return { all: items('all'), subject: items('subject'), direct: items('direct') }
+  }, [list.data, query, meId, t, lang, privateIds])
 
   // Скелетон показываем только если загрузка затянулась, чтобы не мигал на быстрой сети.
   const [skeleton, setSkeleton] = useState(false)
@@ -126,7 +134,7 @@ export function ChatListPanel() {
   const join = useJoinGroup(meId)
   const joiningId = join.isPending ? join.variables : undefined
   const noChats = list.isSuccess && list.data.length === 0
-  const popular = usePopularGroups(!searching && folder === 'all' && noChats)
+  const popular = usePopularGroups(!searching && noChats)
 
   const [groupSkeleton, setGroupSkeleton] = useState(false)
   useEffect(() => {
@@ -193,6 +201,77 @@ export function ChatListPanel() {
 
   const groupsEmpty = groupSearch && !found.isPending && !found.isError && !foundGroups?.length
 
+  const renderBody = (f: Folder) => {
+    const visible = byFolder[f]
+    return (
+        <>
+        {list.isPending ? (
+          skeleton && <ListSkeleton />
+        ) : list.isError && !list.data ? (
+          <EmptyState icon="error" title={t('chats.error')}>
+            <Button type="button" variant="secondary" onClick={() => void list.refetch()} disabled={list.isFetching} className="mt-4">
+              {t('chats.retry')}
+            </Button>
+          </EmptyState>
+        ) : searching ? (
+          visible.length === 0 && (groupsEmpty || !groupSearch) ? (
+            <>
+              <EmptyState icon="chat" title={t('chats.noResults')} />
+              {!groupSearch && <SectionNote>{t('chats.groups.minChars')}</SectionNote>}
+            </>
+          ) : (
+            <>
+              {visible.length > 0 && (
+                <section>
+                  <SectionTitle>{t('chats.sections.mine')}</SectionTitle>
+                  {visible.map((chat) => (
+                    <ChatListRow key={chat.id} chat={chat} active={chat.id === activeId} />
+                  ))}
+                </section>
+              )}
+              <section>
+                <SectionTitle>{t('chats.sections.groups')}</SectionTitle>
+                {groupsSection()}
+              </section>
+            </>
+          )
+        ) : visible.length === 0 ? (
+          f !== 'all' ? (
+            <EmptyState icon="chat" title={t('chats.folderEmpty')} />
+          ) : (
+            <>
+              <EmptyState icon="chat" title={t('chats.empty.title')} hint={t('chats.empty.hint')}>
+                <Button type="button" variant="outline" onClick={() => setCreating(true)} className="mt-4">
+                  {t('chats.create.emptyAction')}
+                </Button>
+              </EmptyState>
+              {!!popularGroups?.length && (
+                <section>
+                  <SectionTitle>{t('chats.sections.popular')}</SectionTitle>
+                  {renderGroups(popularGroups)}
+                </section>
+              )}
+            </>
+          )
+        ) : (
+          visible.map((chat) => <ChatListRow key={chat.id} chat={chat} active={chat.id === activeId} />)
+        )}
+      </>
+    )
+  }
+
+  const swipeOn = !desktop && !searching && !list.isPending
+  const swipe = useFolderSwipe({ enabled: swipeOn, index: folderIndex, count: FOLDERS.length, reduce, pos, onChange: (i) => setFolder(FOLDERS[i]) })
+  const synced = useRef(0)
+  useEffect(() => {
+    if (synced.current === folderIndex) return
+    synced.current = folderIndex
+    if (reduce) pos.set(folderIndex)
+    else animate(pos, folderIndex, { duration: 0.22, ease: EASE_OUT })
+  }, [folderIndex, pos, reduce])
+
+  const panels = swipeOn ? FOLDERS : ([folder] as readonly Folder[])
+
   return (
     <div className="relative h-full overflow-hidden">
       <div
@@ -237,7 +316,12 @@ export function ChatListPanel() {
             className="min-w-0 flex-1 bg-transparent text-base text-foreground outline-none placeholder:text-muted-foreground [&::-webkit-search-cancel-button]:appearance-none"
           />
         </label>
-        <div role="tablist" aria-label={t('chats.folders.label')} className="glass-seg mt-3 flex rounded-full p-1">
+        <div role="tablist" aria-label={t('chats.folders.label')} className="glass-seg relative mt-3 flex rounded-full p-1">
+          <motion.span
+            aria-hidden="true"
+            className="glass-seg-thumb absolute bottom-1 left-1 top-1 rounded-full"
+            style={{ width: `calc((100% - 0.5rem) / ${FOLDERS.length})`, x: thumbX }}
+          />
           {FOLDERS.map((f) => {
             const active = folder === f
             return (
@@ -249,13 +333,6 @@ export function ChatListPanel() {
                 onClick={() => setFolder(f)}
                 className={`relative flex h-8 flex-1 items-center justify-center rounded-full text-sm font-semibold transition-colors duration-150 ${active ? 'text-foreground' : 'text-muted-foreground'}`}
               >
-                {active && (
-                  <motion.span
-                    layoutId="glass-folder"
-                    className="glass-seg-thumb absolute inset-0 rounded-full"
-                    transition={{ duration: 0.22, ease: EASE_OUT }}
-                  />
-                )}
                 <span className="relative">{t(`chats.folders.${f}`)}</span>
               </button>
             )
@@ -264,60 +341,25 @@ export function ChatListPanel() {
       </div>
 
       <div
-        className="glass-scroll absolute inset-0 overflow-y-auto px-1.5 pb-[max(env(safe-area-inset-bottom),0.375rem)]"
-        style={{ paddingTop: headH + 6 }}
+        className="absolute inset-0 overflow-hidden"
+        style={{ touchAction: 'pan-y' }}
+        {...swipe.handlers}
       >
-        {list.isPending ? (
-          skeleton && <ListSkeleton />
-        ) : list.isError && !list.data ? (
-          <EmptyState icon="error" title={t('chats.error')}>
-            <Button type="button" variant="secondary" onClick={() => void list.refetch()} disabled={list.isFetching} className="mt-4">
-              {t('chats.retry')}
-            </Button>
-          </EmptyState>
-        ) : searching ? (
-          visible.length === 0 && (groupsEmpty || !groupSearch) ? (
-            <>
-              <EmptyState icon="chat" title={t('chats.noResults')} />
-              {!groupSearch && <SectionNote>{t('chats.groups.minChars')}</SectionNote>}
-            </>
-          ) : (
-            <>
-              {visible.length > 0 && (
-                <section>
-                  <SectionTitle>{t('chats.sections.mine')}</SectionTitle>
-                  {visible.map((chat) => (
-                    <ChatListRow key={chat.id} chat={chat} active={chat.id === activeId} />
-                  ))}
-                </section>
-              )}
-              <section>
-                <SectionTitle>{t('chats.sections.groups')}</SectionTitle>
-                {groupsSection()}
-              </section>
-            </>
-          )
-        ) : visible.length === 0 ? (
-          folder !== 'all' ? (
-            <EmptyState icon="chat" title={t('chats.folderEmpty')} />
-          ) : (
-            <>
-              <EmptyState icon="chat" title={t('chats.empty.title')} hint={t('chats.empty.hint')}>
-                <Button type="button" variant="outline" onClick={() => setCreating(true)} className="mt-4">
-                  {t('chats.create.emptyAction')}
-                </Button>
-              </EmptyState>
-              {!!popularGroups?.length && (
-                <section>
-                  <SectionTitle>{t('chats.sections.popular')}</SectionTitle>
-                  {renderGroups(popularGroups)}
-                </section>
-              )}
-            </>
-          )
-        ) : (
-          visible.map((chat) => <ChatListRow key={chat.id} chat={chat} active={chat.id === activeId} />)
-        )}
+        <motion.div
+          className="flex h-full"
+          style={{ width: `${panels.length * 100}%`, x: swipeOn ? trackX : 0 }}
+        >
+          {panels.map((f) => (
+            <div
+              key={f}
+              inert={f !== folder}
+              className="glass-scroll h-full min-w-0 flex-1 overflow-y-auto overscroll-y-contain px-1.5 pb-[max(env(safe-area-inset-bottom),0.375rem)]"
+              style={{ paddingTop: headH + 6, touchAction: 'pan-y' }}
+            >
+              {renderBody(f)}
+            </div>
+          ))}
+        </motion.div>
       </div>
       <CreateGroupDialog open={creating} onOpenChange={setCreating} onCreated={onCreated} />
     </div>

@@ -14,7 +14,7 @@ import { useMyChats } from '@/features/chats/use-my-chats'
 import { copyText } from '@/features/messages/copy-text'
 import { DayChip } from '@/features/messages/day-chip'
 import { useDeleteMessage } from '@/features/messages/delete-message'
-import { MessageMenu, type MenuItem, type MenuVia } from '@/features/messages/message-menu'
+import { MessageMenuHost, type MenuHandle, type MenuItem, type MenuVia } from '@/features/messages/message-menu'
 import { useToggleReaction } from '@/features/messages/reactions'
 import { focusComposer, setReplyTarget } from '@/features/messages/reply-store'
 import { useMessageTouch } from '@/features/messages/use-message-touch'
@@ -134,8 +134,7 @@ export function MessageFeed({ chatId, isGroup }: { chatId: string; isGroup: bool
   }, [qc, chatId, ready])
 
   // ---------- Меню сообщения, ответ, переход к цитате ----------
-  type MenuState = { id: string; bubble: HTMLElement; scroller: HTMLElement; via: MenuVia }
-  const [menu, setMenu] = useState<MenuState | null>(null)
+  const menuHandle = useRef<MenuHandle | null>(null)
   const [confirm, setConfirm] = useState<{ msg: ChatMessage; open: boolean } | null>(null)
   const latest = useRef({ messages, feed, myId, isAdmin })
   useLayoutEffect(() => {
@@ -147,9 +146,8 @@ export function MessageFeed({ chatId, isGroup }: { chatId: string; isGroup: bool
     const msg = latest.current.messages.find((m) => m.id === id)
     const scroller = scrollerRef.current
     if (!msg || msg.deleted || !scroller) return
-    setMenu((cur) => (cur && cur.id === id ? cur : { id, bubble, scroller, via }))
+    menuHandle.current?.open({ id, bubble, scroller, via })
   }, [])
-  const closeMenu = useCallback(() => setMenu(null), [])
 
   const startReply = useCallback(
     (msg: ChatMessage) => {
@@ -253,12 +251,9 @@ export function MessageFeed({ chatId, isGroup }: { chatId: string; isGroup: bool
 
   const react = useCallback((id: string, emoji: string) => void toggleReaction(id, emoji), [toggleReaction])
 
-  const menuMsg = menu ? messages.find((m) => m.id === menu.id) : undefined
-
   const canDelete = (m: ChatMessage) => m.status === 'sent' && !m.deleted && (m.senderId === myId || isAdmin)
 
-  const menuItems = (m: ChatMessage): MenuItem[] => {
-    const close = () => setMenu(null)
+  const menuItems = (m: ChatMessage, close: () => void): MenuItem[] => {
     const items: MenuItem[] = []
     if (m.status === 'sent') {
       items.push({
@@ -530,22 +525,7 @@ export function MessageFeed({ chatId, isGroup }: { chatId: string; isGroup: bool
       >
         <ChevronDown className="size-6" />
       </button>
-      {menu && menuMsg && !menuMsg.deleted && (
-        <MessageMenu
-          anchor={menu.bubble}
-          scroller={menu.scroller}
-          mine={menuMsg.senderId === myId}
-          via={menu.via}
-          myReactions={menuMsg.status === 'sent' ? new Set(menuMsg.reactions.filter((r) => r.mine).map((r) => r.emoji)) : null}
-          items={menuItems(menuMsg)}
-          onReact={(emoji) => {
-            menu.bubble.focus({ preventScroll: true })
-            closeMenu()
-            react(menuMsg.id, emoji)
-          }}
-          onClose={closeMenu}
-        />
-      )}
+      <MessageMenuHost ref={menuHandle} messages={messages} myId={myId} buildItems={menuItems} onReact={react} />
 
       <ConfirmDialog
         open={!!confirm?.open}

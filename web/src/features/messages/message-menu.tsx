@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from 'react'
+import { useCallback, useEffect, useImperativeHandle, useLayoutEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type Ref, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
+import type { ChatMessage } from '@/features/messages/message-model'
 
 const QUICK_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🙏'] as const
 
@@ -93,6 +94,20 @@ function compute(anchor: HTMLElement, scroller: HTMLElement, mine: boolean, bar:
       height: Math.max(0, spotBottom - spotTop),
     },
   }
+}
+
+/** Весь экран, кроме скруглённого прямоугольника под пузырём (even-odd): затемнение без гигантской тени. */
+function spotClip({ left, top, width, height }: Layout['spot']) {
+  // Внешний контур ровно по экрану: больший контур раздувает слой.
+  const outer = `M0 0H${window.innerWidth}V${window.innerHeight}H0Z`
+  if (width <= 0 || height <= 0) return `path(evenodd, "${outer}")`
+  const r = Math.min(16, width / 2, height / 2)
+  const right = left + width
+  const bottom = top + height
+  const hole =
+    `M${left + r} ${top}H${right - r}A${r} ${r} 0 0 1 ${right} ${top + r}V${bottom - r}A${r} ${r} 0 0 1 ${right - r} ${bottom}` +
+    `H${left + r}A${r} ${r} 0 0 1 ${left} ${bottom - r}V${top + r}A${r} ${r} 0 0 1 ${left + r} ${top}Z`
+  return `path(evenodd, "${outer}${hole}")`
 }
 
 /** Меню сообщения: панель реакций над пузырём, пункты под ним; на телефоне фон затемнён, пузырь остаётся видимым. */
@@ -228,8 +243,8 @@ export function MessageMenu({ anchor, scroller, mine, via, myReactions, items, o
       {dim && layout && (
         <div
           aria-hidden="true"
-          className="glass-menu-spot glass-menu-fade pointer-events-none fixed rounded-2xl"
-          style={{ left: layout.spot.left, top: layout.spot.top, width: layout.spot.width, height: layout.spot.height }}
+          className="glass-menu-scrim glass-menu-fade pointer-events-none fixed inset-0"
+          style={{ clipPath: spotClip(layout.spot) }}
         />
       )}
       {myReactions && (
@@ -280,5 +295,42 @@ export function MessageMenu({ anchor, scroller, mine, via, myReactions, items, o
       </div>
     </div>,
     document.body,
+  )
+}
+
+export type MenuOpen = { id: string; bubble: HTMLElement; scroller: HTMLElement; via: MenuVia }
+export type MenuHandle = { open: (s: MenuOpen) => void; close: () => void }
+
+type HostProps = {
+  ref: Ref<MenuHandle>
+  messages: ChatMessage[]
+  myId: string | undefined
+  buildItems: (m: ChatMessage, close: () => void) => MenuItem[]
+  onReact: (id: string, emoji: string) => void
+}
+
+/** Слой меню со своим состоянием: открытие и закрытие не перерисовывают ленту. */
+export function MessageMenuHost({ ref, messages, myId, buildItems, onReact }: HostProps) {
+  const [menu, setMenu] = useState<MenuOpen | null>(null)
+  const close = useCallback(() => setMenu(null), [])
+  useImperativeHandle(ref, () => ({ open: (s) => setMenu((cur) => (cur && cur.id === s.id ? cur : s)), close }), [close])
+
+  const msg = menu ? messages.find((m) => m.id === menu.id) : undefined
+  if (!menu || !msg || msg.deleted) return null
+  return (
+    <MessageMenu
+      anchor={menu.bubble}
+      scroller={menu.scroller}
+      mine={msg.senderId === myId}
+      via={menu.via}
+      myReactions={msg.status === 'sent' ? new Set(msg.reactions.filter((r) => r.mine).map((r) => r.emoji)) : null}
+      items={buildItems(msg, close)}
+      onReact={(emoji) => {
+        menu.bubble.focus({ preventScroll: true })
+        close()
+        onReact(msg.id, emoji)
+      }}
+      onClose={close}
+    />
   )
 }

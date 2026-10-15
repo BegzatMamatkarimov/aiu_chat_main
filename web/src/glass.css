@@ -424,16 +424,16 @@ button, [role="tab"] {
 .glass-menu-fade {
   animation: glass-fade 150ms ease-out both;
 }
-/* Пузырь остаётся не затемнённым: вырез по его границам, всё вокруг гасит гигантская тень */
-.glass-menu-spot {
-  box-shadow: 0 0 0 200vmax var(--menu-scrim);
+/* Затемнение на весь экран без blur; вырез под пузырь задаёт clip-path в стиле элемента (слой не больше экрана) */
+.glass-menu-scrim {
+  background: var(--menu-scrim);
 }
 .glass-menu-surface {
   background: var(--glass-panel-bg);
   border: 1px solid var(--glass-border);
   box-shadow: 0 14px 36px -10px var(--glass-shadow);
-  -webkit-backdrop-filter: blur(40px);
-  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
   color: var(--foreground);
 }
 .glass-menu-item {

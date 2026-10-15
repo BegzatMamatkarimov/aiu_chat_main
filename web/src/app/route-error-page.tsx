@@ -6,10 +6,12 @@ import { GlassCard } from '@/components/glass/glass-card'
 import { Button } from '@/components/ui/button'
 import { NotFoundPage } from '@/app/not-found-page'
 import { isChunkLoadError } from '@/app/chunk-reload'
+import { useThemeColor } from '@/app/use-theme-color'
 
 export function RouteErrorPage() {
   const error = useRouteError()
   const { t } = useTranslation()
+  useThemeColor('page')
 
   if (isRouteErrorResponse(error) && error.status === 404) {
     return (

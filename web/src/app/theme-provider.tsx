@@ -4,7 +4,6 @@ export type Theme = 'system' | 'light' | 'dark'
 
 const STORAGE_KEY = 'aiu-theme'
 const DARK_QUERY = '(prefers-color-scheme: dark)'
-const THEME_COLORS = { light: '#393085', dark: '#0e141f' }
 
 function isTheme(value: string | null): value is Theme {
   return value === 'system' || value === 'light' || value === 'dark'
@@ -21,6 +20,8 @@ function readStoredTheme(): Theme {
 
 type ThemeContextValue = {
   theme: Theme
+  /** Тема после учёта системной: тёмная ли сейчас. */
+  dark: boolean
   setTheme: (theme: Theme) => void
 }
 
@@ -29,26 +30,25 @@ const ThemeContext = createContext<ThemeContextValue | null>(null)
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(readStoredTheme)
 
+  const [systemDark, setSystemDark] = useState(() => window.matchMedia(DARK_QUERY).matches)
+  const dark = theme === 'dark' || (theme === 'system' && systemDark)
+
   useEffect(() => {
-    const root = document.documentElement
     const media = window.matchMedia(DARK_QUERY)
-    const apply = () => {
-      const dark = theme === 'dark' || (theme === 'system' && media.matches)
-      root.classList.toggle('dark', dark)
-      // Выбор темы в приложении может отличаться от системной: красим строку состояния по нему.
-      document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]').forEach((m) => {
-        m.content = THEME_COLORS[dark ? 'dark' : 'light']
-      })
-    }
-    apply()
-    if (theme !== 'system') return
-    media.addEventListener('change', apply)
-    return () => media.removeEventListener('change', apply)
-  }, [theme])
+    const sync = () => setSystemDark(media.matches)
+    sync()
+    media.addEventListener('change', sync)
+    return () => media.removeEventListener('change', sync)
+  }, [])
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', dark)
+  }, [dark])
 
   const value = useMemo<ThemeContextValue>(
     () => ({
       theme,
+      dark,
       setTheme: (next) => {
         try {
           localStorage.setItem(STORAGE_KEY, next)
@@ -58,7 +58,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         setThemeState(next)
       },
     }),
-    [theme],
+    [theme, dark],
   )
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>

@@ -16,15 +16,6 @@
     "dark": "Dark"
   },
   "pages": {
-    "chat": {
-      "title": "Chat"
-    },
-    "join": {
-      "title": "Join group"
-    },
-    "login": {
-      "title": "Sign in"
-    },
     "settings": {
       "title": "Settings"
     },
@@ -33,7 +24,7 @@
       "back": "Back to home"
     },
     "loadError": {
-      "title": "Couldn't load the page",
+      "title": "Couldn’t load the page",
       "generic": "Something went wrong",
       "hint": "Check your internet connection",
       "reload": "Refresh"
@@ -43,13 +34,12 @@
     }
   },
   "common": {
-    "loading": "Loading…",
-    "back": "Back"
+    "loading": "Loading…"
   },
   "auth": {
     "signOut": "Sign out",
     "callback": {
-      "error": "Could not complete sign-in. Please try again.",
+      "error": "Couldn’t complete sign-in. Please try again.",
       "backToLogin": "Back to sign in"
     },
     "tabs": {
@@ -90,8 +80,8 @@
       "2": "Year 2",
       "3": "Year 3",
       "4": "Year 4",
-      "5": "Master's, year 1",
-      "6": "Master's, year 2"
+      "5": "Master’s, year 1",
+      "6": "Master’s, year 2"
     },
     "fields": {
       "displayName": "Name",
@@ -110,7 +100,7 @@
     "errors": {
       "required": "Fill in the required fields",
       "usernameInvalid": "Invalid username",
-      "generic": "Could not save. Please try again"
+      "generic": "Couldn’t save. Please try again"
     },
     "saved": "Profile saved"
   },
@@ -136,7 +126,7 @@
       "label": "Folders",
       "all": "All",
       "subject": "Subjects",
-      "direct": "Direct"
+      "direct": "Personal"
     },
     "empty": {
       "title": "No chats yet",
@@ -144,7 +134,7 @@
     },
     "noMessages": "No messages yet",
     "folderEmpty": "Nothing in this folder yet",
-    "error": "Couldn't load chats",
+    "error": "Couldn’t load chats",
     "retry": "Retry",
     "preview": {
       "you": "You",
@@ -164,13 +154,13 @@
     "groups": {
       "minChars": "Enter at least 2 characters to search groups",
       "none": "No groups found",
-      "error": "Couldn't search groups"
+      "error": "Couldn’t search groups"
     },
     "join": {
       "action": "Join",
-      "done": "You joined \"{{name}}\"",
-      "error": "Couldn't join the group. Please try again",
-      "denied": "This group can't be joined: it's no longer public"
+      "done": "You joined “{{name}}”",
+      "error": "Couldn’t join the group. Please try again",
+      "denied": "This group can’t be joined: it’s no longer public"
     },
     "create": {
       "open": "New group",
@@ -180,16 +170,16 @@
       "namePlaceholder": "E.g. Algorithms and Data Structures",
       "nameRequired": "Enter a group name",
       "description": "Description (optional)",
-      "descriptionPlaceholder": "What the group is about and who it's for",
+      "descriptionPlaceholder": "What the group is about and who it’s for",
       "submit": "Create",
-      "error": "Couldn't create the group. Check your connection and try again",
-      "done": "Group \"{{name}}\" created",
+      "error": "Couldn’t create the group. Check your connection and try again",
+      "done": "Group “{{name}}” created",
       "emptyAction": "Create group",
       "typeLabel": "Group type",
       "typePublic": "Public",
       "typePrivate": "Private",
-      "publicHint": "Every student will be able to find the group in search and join it",
-      "privateHint": "The group is not in search. Joining is possible only via an invite link",
+      "publicHint": "Any student can find this group in search and join it",
+      "privateHint": "The group doesn’t appear in search. People can join only via an invite link",
       "donePrivate": "Private group “{{name}}” created. Invite members with the link",
       "copyLink": "Copy link"
     },
@@ -199,10 +189,10 @@
     "soon": "Messages are coming soon",
     "notFound": {
       "title": "Chat not found",
-      "hint": "It was deleted, or you don't have access to it",
-      "toList": "To chat list"
+      "hint": "It may have been deleted, or you don’t have access to it",
+      "toList": "Back to chats"
     },
-    "loadError": "Couldn't load the chat",
+    "loadError": "Couldn’t load the chat",
     "members_one": "{{count}} member",
     "members_other": "{{count}} members",
     "menu": {
@@ -220,7 +210,7 @@
       "title": "Leave “{{name}}”?",
       "body": "You will stop receiving messages. You can come back via search or a link.",
       "adminNote": "Admin rights will go to {{name}}.",
-      "adminNoteGeneric": "Admin rights will go to the longest-standing member.",
+      "adminNoteGeneric": "Admin rights will go to the member who has been in the group the longest.",
       "cancel": "Cancel",
       "confirm": "Leave",
       "done": "You left the group “{{name}}”",
@@ -234,8 +224,8 @@
     "open": "Open chat",
     "done": "You joined the group “{{name}}”",
     "error": "Couldn’t join the group. Please try again",
-    "invalid": "The invitation is invalid or has expired",
-    "loadError": "Couldn’t load the invitation"
+    "invalid": "This invite link is invalid or has expired",
+    "loadError": "Couldn’t load the invite"
   },
   "group": {
     "info": {

@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { FROM_CHAT_STATE } from '@/features/messages/use-close-info'
 import { LeaveDialog } from '@/features/messages/leave-dialog'
+import { usePrefetchAdminSuccessor } from '@/features/chats/use-invite'
 import { useShareInvite } from '@/features/chats/use-share-invite'
 
 /** Меню группы в шапке чата: «О группе», приглашение по ссылке и выход. */
@@ -19,10 +20,11 @@ export function GroupMenu({ chatId, title }: { chatId: string; title: string }) 
   const navigate = useNavigate()
   const { share } = useShareInvite(chatId, title)
   const [leaveOpen, setLeaveOpen] = useState(false)
+  const prefetchSuccessor = usePrefetchAdminSuccessor(chatId)
 
   return (
     <>
-      <DropdownMenu>
+      <DropdownMenu onOpenChange={(open) => open && prefetchSuccessor()}>
         <DropdownMenuTrigger asChild>
           <button
             type="button"

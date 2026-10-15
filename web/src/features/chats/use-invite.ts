@@ -1,5 +1,7 @@
+import { useCallback } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { MY_CHATS_KEY } from '@/features/chats/use-my-chats'
+import { useAuth } from '@/features/auth/use-auth'
+import { MY_CHATS_KEY, useMyChats } from '@/features/chats/use-my-chats'
 import { GROUPS_SEARCH_KEY } from '@/features/chats/use-public-groups'
 import { supabase } from '@/lib/supabase'
 
@@ -68,25 +70,38 @@ export function useInviteCode(chatId: string, enabled: boolean) {
   })
 }
 
+const adminSuccessorOptions = (chatId: string, meId: string) => ({
+  queryKey: ['chat', chatId, 'admin-successor'],
+  staleTime: 30_000,
+  queryFn: async () => {
+    const { data, error } = await supabase
+      .from('chat_members')
+      .select('user_id, role, joined_at, profiles(display_name)')
+      .eq('chat_id', chatId)
+      .order('joined_at', { ascending: true })
+      .order('user_id', { ascending: true })
+    if (error) throw error
+    const others = data.filter((m) => m.user_id !== meId)
+    if (others.length === 0 || others.some((m) => m.role === 'admin')) return null
+    return others[0].profiles?.display_name?.trim() || null
+  },
+})
+
 /** Кому перейдут права admin, если уйдёт последний admin: самый давний из остальных участников. */
 export function useAdminSuccessor(chatId: string, enabled: boolean, meId: string | undefined) {
-  return useQuery({
-    queryKey: ['chat', chatId, 'admin-successor'],
-    enabled: enabled && !!meId,
-    gcTime: 0,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('chat_members')
-        .select('user_id, role, joined_at, profiles(display_name)')
-        .eq('chat_id', chatId)
-        .order('joined_at', { ascending: true })
-        .order('user_id', { ascending: true })
-      if (error) throw error
-      const others = data.filter((m) => m.user_id !== meId)
-      if (others.length === 0 || others.some((m) => m.role === 'admin')) return null
-      return others[0].profiles?.display_name?.trim() || null
-    },
-  })
+  return useQuery({ ...adminSuccessorOptions(chatId, meId ?? ''), enabled: enabled && !!meId })
+}
+
+/** Заранее грузит преемника для окна «Покинуть группу» (только если я admin этой группы). */
+export function usePrefetchAdminSuccessor(chatId: string) {
+  const qc = useQueryClient()
+  const { user } = useAuth()
+  const meId = user?.id
+  const myChats = useMyChats()
+  const isAdmin = myChats.data?.find((c) => c.id === chatId)?.role === 'admin'
+  return useCallback(() => {
+    if (isAdmin && meId) void qc.prefetchQuery(adminSuccessorOptions(chatId, meId))
+  }, [qc, chatId, meId, isAdmin])
 }
 
 export function useLeaveChat() {

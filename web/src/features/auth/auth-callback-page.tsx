@@ -27,7 +27,7 @@ export function AuthCallbackPage() {
   if (urlError || timedOut) {
     return (
       <main className="flex min-h-dvh flex-col items-center justify-center gap-3 p-4 text-center">
-        <p role="alert">{urlError ?? t('auth.callback.error')}</p>
+        <p role="alert">{t('auth.callback.error')}</p>
         <Link to="/login" className="text-primary underline">
           {t('auth.callback.backToLogin')}
         </Link>

@@ -131,7 +131,10 @@ export function ProfileForm({ submitLabel, onSaved }: Props) {
           autoComplete="name"
           maxLength={64}
           value={displayName}
-          onChange={(e) => setDisplayName(e.target.value)}
+          onChange={(e) => {
+            setDisplayName(e.target.value)
+            setError(null)
+          }}
           disabled={saving}
           className="text-base md:text-sm"
         />
@@ -158,6 +161,7 @@ export function ProfileForm({ submitLabel, onSaved }: Props) {
             onChange={(e) => {
               setUsername(e.target.value.toLowerCase())
               setAvailability('idle')
+              setError(null)
             }}
             disabled={saving}
             aria-describedby="profile-username-hint"
@@ -186,7 +190,14 @@ export function ProfileForm({ submitLabel, onSaved }: Props) {
 
       <div className="flex flex-col gap-2">
         <Label htmlFor="profile-course">{t('profile.fields.course')}</Label>
-        <Select value={course} onValueChange={setCourse} disabled={saving}>
+        <Select
+          value={course}
+          onValueChange={(value) => {
+            setCourse(value)
+            setError(null)
+          }}
+          disabled={saving}
+        >
           <SelectTrigger id="profile-course" className="w-full text-base md:text-sm">
             <SelectValue placeholder={t('profile.fields.coursePlaceholder')} />
           </SelectTrigger>
@@ -208,7 +219,10 @@ export function ProfileForm({ submitLabel, onSaved }: Props) {
           maxLength={100}
           placeholder={t('profile.fields.majorPlaceholder')}
           value={major}
-          onChange={(e) => setMajor(e.target.value)}
+          onChange={(e) => {
+            setMajor(e.target.value)
+            setError(null)
+          }}
           disabled={saving}
           className="text-base md:text-sm"
         />

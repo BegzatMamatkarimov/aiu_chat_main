@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -22,6 +22,7 @@ import {
   type GroupInfo,
   type GroupMember,
 } from '@/features/chats/use-group-admin'
+import { usePrefetchAdminSuccessor } from '@/features/chats/use-invite'
 import { useShareInvite } from '@/features/chats/use-share-invite'
 import { EditGroupDialog } from '@/features/messages/edit-group-dialog'
 import { HEADER_CLASS } from '@/features/messages/header-class'
@@ -191,6 +192,11 @@ function GroupInfoContent({ group }: { group: GroupInfo }) {
 
   const list = members.data
   const isAdmin = !!user && !!list?.some((m) => m.userId === user.id && m.role === 'admin')
+  const prefetchSuccessor = usePrefetchAdminSuccessor(group.id)
+  useEffect(() => {
+    if (isAdmin) prefetchSuccessor()
+    // list: после смены ролей или состава преемник мог измениться.
+  }, [isAdmin, prefetchSuccessor, list])
   const nameOf = (m: GroupMember) => m.displayName || (m.username ? `@${m.username}` : t('group.info.noName'))
 
   const fail = (e: unknown) => toast.error(t(isLastAdminError(e) ? 'group.info.errors.lastAdmin' : 'group.info.errors.generic'))

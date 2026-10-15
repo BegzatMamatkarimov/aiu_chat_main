@@ -1,9 +1,8 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Outlet, useMatch, useOutlet } from 'react-router'
 import { animate, motion, useDragControls, useMotionValue, useReducedMotion, useTransform } from 'motion/react'
 import { GlassBackground } from '@/components/glass/glass-background'
 import { ChatListPanel } from '@/features/chats/chat-list-panel'
-import { ShellContext } from '@/features/chats/shell-context'
 import { useCloseChat } from '@/features/chats/use-close-chat'
 import { EASE_DRAWER } from '@/lib/motion'
 import { useIsDesktop } from '@/lib/use-media-query'
@@ -27,25 +26,22 @@ function useViewportWidth() {
 export function AppShell() {
   const desktop = useIsDesktop()
   const open = useMatch('/c/:chatId') !== null
-  const state = useMemo(() => ({ desktop, open }), [desktop, open])
 
   return (
-    <ShellContext.Provider value={state}>
-      <div className="h-dvh overflow-hidden pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
-        {desktop ? (
-          <div className="flex h-full min-h-0">
-            <aside className="min-w-0 shrink-0 border-r border-border" style={{ width: LIST_WIDTH }}>
-              <ChatListPanel />
-            </aside>
-            <main className="relative min-w-0 flex-1">
-              <Outlet />
-            </main>
-          </div>
-        ) : (
-          <MobileStack open={open} />
-        )}
-      </div>
-    </ShellContext.Provider>
+    <div className="h-dvh overflow-hidden pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
+      {desktop ? (
+        <div className="flex h-full min-h-0">
+          <aside className="min-w-0 shrink-0 border-r border-border" style={{ width: LIST_WIDTH }}>
+            <ChatListPanel />
+          </aside>
+          <main className="relative min-w-0 flex-1">
+            <Outlet />
+          </main>
+        </div>
+      ) : (
+        <MobileStack open={open} />
+      )}
+    </div>
   )
 }
 

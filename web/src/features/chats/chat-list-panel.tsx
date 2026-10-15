@@ -91,8 +91,6 @@ export function ChatListPanel() {
   const desktop = useIsDesktop()
   const pos = useMotionValue(0)
   const willChange = useMotionValue('auto')
-  // Папка, чьи аватары участвуют в «перелёте» в шапку чата: переключается, когда трек доехал.
-  const [flyFolder, setFlyFolder] = useState<Folder>('all')
   const thumbX = useTransform(pos, (p) => `${p * 100}%`)
   const trackX = useTransform(pos, (p) => `${(-p / FOLDERS.length) * 100}%`)
   const [query, setQuery] = useState('')
@@ -227,7 +225,7 @@ export function ChatListPanel() {
                 <section>
                   <SectionTitle>{t('chats.sections.mine')}</SectionTitle>
                   {visible.map((chat) => (
-                    <ChatListRow key={chat.id} chat={chat} active={chat.id === activeId} fly={f === flyFolder} />
+                    <ChatListRow key={chat.id} chat={chat} active={chat.id === activeId} />
                   ))}
                 </section>
               )}
@@ -256,7 +254,7 @@ export function ChatListPanel() {
             </>
           )
         ) : (
-          visible.map((chat) => <ChatListRow key={chat.id} chat={chat} active={chat.id === activeId} fly={f === flyFolder} />)
+          visible.map((chat) => <ChatListRow key={chat.id} chat={chat} active={chat.id === activeId} />)
         )}
       </>
     )
@@ -278,16 +276,6 @@ export function ChatListPanel() {
     synced.current = folderIndex
     goTo(folderIndex)
   }, [folderIndex, goTo])
-
-  // Трек остановился на целой папке — только теперь её аватары получают layoutId.
-  useEffect(() => {
-    const settleFly = () => {
-      const p = pos.get()
-      if (Number.isInteger(p) || Math.abs(p - Math.round(p)) < 1e-3) setFlyFolder(FOLDERS[Math.round(p)])
-    }
-    settleFly()
-    return pos.on('animationComplete', settleFly)
-  }, [pos])
 
   const panels = swipeOn ? FOLDERS : ([folder] as readonly Folder[])
 

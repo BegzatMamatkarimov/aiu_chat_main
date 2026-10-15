@@ -222,6 +222,7 @@
     "privateGroup": "Private group",
     "openInfo": "Group info: {{name}}",
     "feed": {
+      "unread": "Unread messages",
       "label": "Messages",
       "empty": "No messages yet. Be the first to write!",
       "loadError": "Could not load messages",

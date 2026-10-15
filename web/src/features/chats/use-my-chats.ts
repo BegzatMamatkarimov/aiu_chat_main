@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { isReading } from '@/features/chats/mark-read'
 import { parseChat, type ChatSummary } from '@/features/chats/chat-model'
 import { supabase } from '@/lib/supabase'
 
@@ -8,7 +9,7 @@ export const MY_CHATS_KEY = ['chats', 'mine'] as const
 async function fetchMyChats(): Promise<ChatSummary[]> {
   const { data, error } = await supabase.rpc('list_my_chats')
   if (error) throw error
-  return data.map(parseChat)
+  return data.map(parseChat).map((c) => (c.unread > 0 && isReading(c.id) ? { ...c, unread: 0 } : c))
 }
 
 export function useMyChats() {

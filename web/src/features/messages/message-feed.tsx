@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ChevronDown, Copy, CornerUpLeft, RotateCcw, Trash2 } from 'lucide-react'
 import { useReducedMotion } from 'motion/react'
@@ -7,6 +7,8 @@ import { ConfirmDialog } from '@/components/glass/confirm-dialog'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/features/auth/use-auth'
+import { useQueryClient } from '@tanstack/react-query'
+import { markChatRead, setReadActive } from '@/features/chats/mark-read'
 import { useMyChats } from '@/features/chats/use-my-chats'
 import { copyText } from '@/features/messages/copy-text'
 import { DayChip } from '@/features/messages/day-chip'
@@ -74,6 +76,7 @@ export function MessageFeed({ chatId, isGroup }: { chatId: string; isGroup: bool
   const toggleReaction = useToggleReaction(chatId)
   const deleteMessage = useDeleteMessage(chatId)
   const myChats = useMyChats()
+  const qc = useQueryClient()
   const isAdmin = isGroup && myChats.data?.find((c) => c.id === chatId)?.role === 'admin'
   const { messages, loaded } = feed
 
@@ -91,6 +94,31 @@ export function MessageFeed({ chatId, isGroup }: { chatId: string; isGroup: bool
   const [slow, setSlow] = useState(false)
 
   const days = useMemo(() => buildDays(messages, myId), [messages, myId])
+
+  // Разделитель «Непрочитанные»: счётчик фиксируется один раз при открытии, до mark_read; перед N-м с конца чужим сообщением.
+  const [divider, setDivider] = useState<{ id: string | null } | null>(null)
+  if (divider === null && loaded && (myChats.data || myChats.isError)) {
+    const unread = myChats.data?.find((c) => c.id === chatId)?.unread ?? 0
+    const others = messages.filter((m) => m.senderId !== myId && m.status === 'sent')
+    setDivider({ id: unread > 0 && others.length > 0 ? others[Math.max(0, others.length - unread)].id : null })
+  }
+  const dividerId = divider?.id ?? null
+  const ready = divider !== null
+
+  // Отметка «прочитано»: при открытии, при возврате во вкладку (новые входящие обрабатывает realtime).
+  useEffect(() => {
+    if (!ready) return
+    setReadActive(chatId, true)
+    const run = () => markChatRead(qc, chatId)
+    run()
+    document.addEventListener('visibilitychange', run)
+    window.addEventListener('focus', run)
+    return () => {
+      document.removeEventListener('visibilitychange', run)
+      window.removeEventListener('focus', run)
+      setReadActive(chatId, false)
+    }
+  }, [qc, chatId, ready])
 
   // ---------- Меню сообщения, ответ, переход к цитате ----------
   type MenuState = { id: string; bubble: HTMLElement; scroller: HTMLElement; via: MenuVia }
@@ -318,11 +346,16 @@ export function MessageFeed({ chatId, isGroup }: { chatId: string; isGroup: bool
     const el = scrollerRef.current
     if (!el) return
     if (!initialized.current) {
-      if (!loaded) return
+      if (!loaded || !ready) return
       initialized.current = true
       firstRef.current = firstId
       lastRef.current = lastId
-      pin()
+      const mark = dividerId ? document.getElementById('unread-divider') : null
+      if (mark && el.scrollHeight - (mark.getBoundingClientRect().top - el.getBoundingClientRect().top + el.scrollTop) > el.clientHeight) {
+        stick.current = false
+        el.scrollTop = mark.getBoundingClientRect().top - el.getBoundingClientRect().top + el.scrollTop - 40
+        ownTop.current = el.scrollTop
+      } else pin()
     } else {
       const prevFirst = firstRef.current
       const prevTail = lastRef.current
@@ -337,7 +370,7 @@ export function MessageFeed({ chatId, isGroup }: { chatId: string; isGroup: bool
       }
     }
     metrics.current = { h: el.scrollHeight, top: el.scrollTop }
-  }, [loaded, messages, firstId, lastId, myId, pin])
+  }, [loaded, ready, dividerId, messages, firstId, lastId, myId, pin])
 
   const loadOlder = () => {
     const el = scrollerRef.current
@@ -422,8 +455,13 @@ export function MessageFeed({ chatId, isGroup }: { chatId: string; isGroup: bool
             <section key={day.key}>
               <DayChip ts={day.ts} scrollerRef={scrollerRef} />
               {day.rows.map((row) => (
+                <Fragment key={row.msg.id}>
+                {row.msg.id === dividerId && (
+                  <div id="unread-divider" className="my-2 flex justify-center">
+                    <span className="glass-pill rounded-full px-3 py-1 text-xs font-semibold text-muted-foreground">{t('chat.feed.unread')}</span>
+                  </div>
+                )}
                 <MessageRow
-                  key={row.msg.id}
                   msg={row.msg}
                   mine={row.mine}
                   first={row.first}
@@ -436,6 +474,7 @@ export function MessageFeed({ chatId, isGroup }: { chatId: string; isGroup: bool
                   onJump={jumpTo}
                   onReact={react}
                 />
+                </Fragment>
               ))}
             </section>
           ))}

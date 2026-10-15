@@ -23,6 +23,13 @@ export function useRealtimeSync() {
     openRef.current = openId
   })
 
+  // Заголовок вкладки: «(N) AIU Chat», N — сумма непрочитанных.
+  const total = (chats ?? []).reduce((n, c) => n + c.unread, 0)
+  useEffect(() => {
+    document.title = total > 0 ? `(${total}) AIU Chat` : 'AIU Chat'
+  }, [total])
+  useEffect(() => () => void (document.title = 'AIU Chat'), [])
+
   // Приватные каналы проверяют JWT: при входе и при каждом обновлении токена передаём его в realtime.
   useEffect(() => {
     if (token) void supabase.realtime.setAuth(token).catch(() => {})

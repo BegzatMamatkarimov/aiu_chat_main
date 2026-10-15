@@ -2,6 +2,7 @@ import type { QueryClient } from '@tanstack/react-query'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { applyDeletedMessage, applyIncomingMessage } from '@/features/chats/chat-list-cache'
+import { markChatRead } from '@/features/chats/mark-read'
 import { MY_CHATS_KEY } from '@/features/chats/use-my-chats'
 import { setRealtimeHealthy } from '@/features/messages/connection-status'
 import { parseMessage, parseReactions } from '@/features/messages/message-model'
@@ -81,7 +82,9 @@ export function startRealtime({ qc, myId, getToken, getOpenChatId }: RealtimeOpt
     if (!msg) return
     // Своё сообщение с этого устройства уже есть в pending под тем же id: серверная версия в кэше заменяет его без дубля.
     upsertMessage(qc, msg)
-    applyIncomingMessage(qc, msg, myId, viewing(msg.chatId))
+    const seen = viewing(msg.chatId)
+    applyIncomingMessage(qc, msg, myId, seen)
+    if (seen && msg.senderId !== myId) markChatRead(qc, msg.chatId)
   }
 
   const onDeleted = (chatId: string, payload: unknown) => {

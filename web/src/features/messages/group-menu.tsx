@@ -15,28 +15,8 @@ import {
 import { useAuth } from '@/features/auth/use-auth'
 import { useMyChats } from '@/features/chats/use-my-chats'
 import { useAdminSuccessor, useInviteCode, useLeaveChat } from '@/features/chats/use-invite'
+import { copyText, inviteUrl } from '@/features/chats/invite-link'
 import { useIsDesktop } from '@/lib/use-media-query'
-
-async function copyText(text: string): Promise<boolean> {
-  try {
-    await navigator.clipboard.writeText(text)
-    return true
-  } catch {
-    const area = document.createElement('textarea')
-    area.value = text
-    area.setAttribute('readonly', '')
-    area.style.cssText = 'position:fixed;top:0;left:0;opacity:0'
-    document.body.appendChild(area)
-    area.select()
-    try {
-      return document.execCommand('copy')
-    } catch {
-      return false
-    } finally {
-      area.remove()
-    }
-  }
-}
 
 function LeaveDialog({ chatId, title, open, onOpenChange }: { chatId: string; title: string; open: boolean; onOpenChange: (open: boolean) => void }) {
   const { t } = useTranslation()
@@ -112,7 +92,7 @@ export function GroupMenu({ chatId, title }: { chatId: string; title: string }) 
       toast.error(t('chat.invite.error'))
       return
     }
-    const url = `${location.origin}/join/${code}`
+    const url = inviteUrl(code)
     if (!desktop && typeof navigator.share === 'function') {
       try {
         await navigator.share({ title, text: t('chat.invite.shareText', { name: title }), url })

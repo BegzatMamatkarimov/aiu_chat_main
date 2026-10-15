@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { parsePeer, chatTitle, type ChatPeer } from '@/features/chats/chat-model'
-import { useMyChats } from '@/features/chats/use-my-chats'
+import { useMyChats, usePrivateGroupIds } from '@/features/chats/use-my-chats'
 import { useAuth } from '@/features/auth/use-auth'
 import { supabase } from '@/lib/supabase'
 
@@ -10,6 +10,7 @@ export type ChatHeader = {
   title: string
   avatarUrl: string | null
   peer: ChatPeer | null
+  isPrivate: boolean
 }
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -18,7 +19,7 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 async function fetchMemberChat(chatId: string, userId: string): Promise<ChatHeader | null> {
   const { data, error } = await supabase
     .from('chat_members')
-    .select('chats(id, type, name, avatar_url)')
+    .select('chats(id, type, name, avatar_url, is_public)')
     .eq('chat_id', chatId)
     .eq('user_id', userId)
     .maybeSingle()
@@ -44,7 +45,7 @@ async function fetchMemberChat(chatId: string, userId: string): Promise<ChatHead
       peer = profile ? parsePeer(profile) : null
     }
   }
-  return { id: chat.id, type, title: chatTitle({ type, name: chat.name, peer }), avatarUrl: type === 'direct' ? (peer?.avatarUrl ?? null) : chat.avatar_url, peer }
+  return { id: chat.id, type, title: chatTitle({ type, name: chat.name, peer }), avatarUrl: type === 'direct' ? (peer?.avatarUrl ?? null) : chat.avatar_url, peer, isPrivate: type === 'group' && !chat.is_public }
 }
 
 export type ChatHeaderState =
@@ -57,6 +58,7 @@ export type ChatHeaderState =
 export function useChatHeader(chatId: string): ChatHeaderState {
   const { user } = useAuth()
   const list = useMyChats()
+  const privateIds = usePrivateGroupIds()
   const valid = UUID_RE.test(chatId)
   const cached = list.data?.find((c) => c.id === chatId)
   const needFallback = valid && !cached && !list.isPending && !!user
@@ -69,7 +71,7 @@ export function useChatHeader(chatId: string): ChatHeaderState {
   if (!valid) return { status: 'missing' }
   if (cached) {
     const avatarUrl = cached.type === 'direct' ? (cached.peer?.avatarUrl ?? null) : cached.avatarUrl
-    return { status: 'ready', chat: { id: cached.id, type: cached.type, title: chatTitle(cached), avatarUrl, peer: cached.peer } }
+    return { status: 'ready', chat: { id: cached.id, type: cached.type, title: chatTitle(cached), avatarUrl, peer: cached.peer, isPrivate: privateIds.has(cached.id) } }
   }
   if (list.isPending) return { status: 'loading' }
   if (list.isError && !list.data) return { status: 'error', retry: () => void list.refetch() }

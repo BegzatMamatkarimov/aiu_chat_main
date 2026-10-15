@@ -5,6 +5,7 @@ import type { TFunction } from 'i18next'
 import { motion } from 'motion/react'
 import { CircleAlert, MessagesSquare, Search, SquarePen } from 'lucide-react'
 import { toast } from 'sonner'
+import { copyText, inviteUrl } from '@/features/chats/invite-link'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/features/auth/use-auth'
 import { chatTitle, formatChatTime, matchesQuery, type ChatSummary } from '@/features/chats/chat-model'
@@ -21,7 +22,7 @@ import {
   usePublicGroupSearch,
   type PublicGroup,
 } from '@/features/chats/use-public-groups'
-import { useMyChats } from '@/features/chats/use-my-chats'
+import { useMyChats, usePrivateGroupIds } from '@/features/chats/use-my-chats'
 import { EASE_OUT } from '@/lib/motion'
 import { useHeight } from '@/lib/use-height'
 
@@ -96,6 +97,7 @@ export function ChatListPanel() {
   const meId = user?.id
   const lang = i18n.language
 
+  const privateIds = usePrivateGroupIds()
   const visible = useMemo<ChatListItem[]>(
     () =>
       (list.data ?? [])
@@ -107,8 +109,9 @@ export function ChatListPanel() {
           time: c.lastMessage ? formatChatTime(c.lastMessage.createdAt, lang) : '',
           unread: c.unread,
           avatarUrl: c.type === 'direct' ? c.peer?.avatarUrl : c.avatarUrl,
+          isPrivate: privateIds.has(c.id),
         })),
-    [list.data, folder, query, meId, t, lang],
+    [list.data, folder, query, meId, t, lang, privateIds],
   )
 
   // Скелетон показываем только если загрузка затянулась, чтобы не мигал на быстрой сети.
@@ -149,11 +152,22 @@ export function ChatListPanel() {
       onError: (e) => toast.error(e instanceof JoinError && e.denied ? t('chats.join.denied') : t('chats.join.error')),
     })
 
-  const onCreated = (g: { id: string; name: string | null }) => {
+  const onCreated = (g: { id: string; name: string | null; isPublic: boolean; inviteCode: string }) => {
     setCreating(false)
     setQuery('')
     void navigate(`/c/${g.id}`, { state: FROM_LIST_STATE })
-    toast.success(t('chats.create.done', { name: g.name }))
+    if (g.isPublic) toast.success(t('chats.create.done', { name: g.name }))
+    else
+      toast.success(t('chats.create.donePrivate', { name: g.name }), {
+        action: {
+          label: t('chats.create.copyLink'),
+          onClick: () => {
+            void copyText(inviteUrl(g.inviteCode)).then((ok) =>
+              ok ? toast.success(t('chat.invite.copied')) : toast.error(t('chat.invite.error')),
+            )
+          },
+        },
+      })
   }
 
   const renderGroups = (groups: PublicGroup[]) =>

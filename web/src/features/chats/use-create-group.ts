@@ -14,17 +14,17 @@ export class CreateGroupError extends Error {
   }
 }
 
-export type NewGroup = { name: string; description: string }
+export type NewGroup = { name: string; description: string; isPublic: boolean }
 
-/** Создание публичной группы через RPC create_group (создатель становится admin). Возвращает созданную группу. */
+/** Создание группы через RPC create_group (создатель становится admin). Возвращает созданную группу. */
 export function useCreateGroup() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: async ({ name, description }: NewGroup) => {
+    mutationFn: async ({ name, description, isPublic }: NewGroup) => {
       const { data, error } = await supabase.rpc('create_group', {
         p_name: name,
         p_description: description || null,
-        p_is_public: true,
+        p_is_public: isPublic,
       })
       // 22023 — имя не прошло проверку длины на сервере.
       if (error) throw new CreateGroupError(error.code === '22023')

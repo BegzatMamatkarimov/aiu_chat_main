@@ -1,4 +1,6 @@
+import { Lock } from 'lucide-react'
 import { Link } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import { ChatAvatar } from '@/components/glass/chat-avatar'
 import { FROM_LIST_STATE } from '@/features/chats/use-close-chat'
 import { initials } from '@/features/profile/initials'
@@ -10,9 +12,11 @@ export type ChatListItem = {
   time: string
   unread: number
   avatarUrl?: string | null
+  isPrivate?: boolean
 }
 
 export function ChatListRow({ chat, active }: { chat: ChatListItem; active: boolean }) {
+  const { t } = useTranslation()
   return (
     <Link
       to={`/c/${chat.id}`}
@@ -23,7 +27,12 @@ export function ChatListRow({ chat, active }: { chat: ChatListItem; active: bool
       <ChatAvatar chatId={chat.id} label={initials(chat.title)} src={chat.avatarUrl} size={52} side="list" />
       <span className="min-w-0 flex-1">
         <span className="flex items-baseline justify-between gap-2">
-          <span className="truncate text-[0.9375rem] font-semibold">{chat.title}</span>
+          <span className="flex min-w-0 items-center gap-1">
+            <span className="truncate text-[0.9375rem] font-semibold">{chat.title}</span>
+            {chat.isPrivate && (
+              <Lock aria-label={t('chats.privateGroup')} role="img" className={`size-3.5 shrink-0 ${active ? 'opacity-80' : 'text-muted-foreground'}`} />
+            )}
+          </span>
           <span className={`shrink-0 text-xs tabular-nums ${active ? 'opacity-80' : 'text-muted-foreground'}`}>{chat.time}</span>
         </span>
         <span className="mt-0.5 flex items-center justify-between gap-2">

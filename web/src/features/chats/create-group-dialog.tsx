@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties, type FormEvent, type RefObject } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion, useDragControls, useReducedMotion, type PanInfo } from 'motion/react'
-import { Loader2, X } from 'lucide-react'
+import { Globe, Loader2, Lock, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogOverlay, DialogPortal, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
@@ -24,7 +24,7 @@ const COUNTER_FROM = 20
 const CLOSE_DISTANCE = 110
 const CLOSE_VELOCITY = 600
 
-type Created = { id: string; name: string | null }
+type Created = { id: string; name: string | null; isPublic: boolean; inviteCode: string }
 
 /** Телефон: экранная клавиатура сужает видимую область, лист поднимается над ней, а «Создать» остаётся на виду. */
 function useKeyboardFit(active: boolean) {
@@ -58,6 +58,11 @@ function Counter({ value, max }: { value: string; max: number }) {
   )
 }
 
+const TYPES = [
+  { value: true, key: 'typePublic', Icon: Globe },
+  { value: false, key: 'typePrivate', Icon: Lock },
+] as const
+
 function CreateGroupForm({
   nameRef,
   pending,
@@ -69,13 +74,14 @@ function CreateGroupForm({
   pending: boolean
   failed: boolean
   invalidName: boolean
-  onSubmit: (name: string, description: string) => void
+  onSubmit: (name: string, description: string, isPublic: boolean) => void
 }) {
   const { t } = useTranslation()
   const { user } = useAuth()
   const [initial] = useState(() => readGroupDraft(user?.id))
   const [name, setName] = useState(initial.name)
   const [description, setDescription] = useState(initial.description)
+  const [isPublic, setIsPublic] = useState(initial.isPublic)
   const [nameError, setNameError] = useState(false)
   const trimmed = name.trim()
   const showNameError = nameError || invalidName
@@ -88,7 +94,7 @@ function CreateGroupForm({
       nameRef.current?.focus()
       return
     }
-    onSubmit(trimmed, description.trim())
+    onSubmit(trimmed, description.trim(), isPublic)
   }
 
   return (
@@ -113,7 +119,7 @@ function CreateGroupForm({
               onChange={(e) => {
                 setName(e.target.value)
                 setNameError(false)
-                writeGroupDraft(user?.id, e.target.value, description)
+                writeGroupDraft(user?.id, e.target.value, description, isPublic)
               }}
               maxLength={GROUP_NAME_MAX}
               placeholder={t('chats.create.namePlaceholder')}
@@ -142,7 +148,7 @@ function CreateGroupForm({
             value={description}
             onChange={(e) => {
               setDescription(e.target.value)
-              writeGroupDraft(user?.id, name, e.target.value)
+              writeGroupDraft(user?.id, name, e.target.value, isPublic)
             }}
             maxLength={GROUP_DESCRIPTION_MAX}
             rows={3}
@@ -153,6 +159,27 @@ function CreateGroupForm({
             <Counter value={description} max={GROUP_DESCRIPTION_MAX} />
           </div>
         </div>
+        <div role="radiogroup" aria-label={t('chats.create.typeLabel')} className="grid grid-cols-2 gap-2">
+          {TYPES.map(({ value, key, Icon }) => (
+            <label
+              key={key}
+              className="glass-press relative flex min-w-0 cursor-pointer items-center gap-2 rounded-2xl border border-foreground/10 px-3 py-2.5 text-sm font-medium has-[:checked]:border-primary has-[:checked]:bg-primary/10 has-[:checked]:text-primary has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring"
+            >
+              <input
+                type="radio"
+                name="group-type"
+                checked={isPublic === value}
+                onChange={() => {
+                  setIsPublic(value)
+                  writeGroupDraft(user?.id, name, description, value)
+                }}
+                className="sr-only"
+              />
+              <Icon aria-hidden="true" className="size-4 shrink-0" />
+              <span className="truncate">{t(`chats.create.${key}`)}</span>
+            </label>
+          ))}
+        </div>
       </div>
       <div className="space-y-2.5 px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3">
         {failed && (
@@ -160,7 +187,7 @@ function CreateGroupForm({
             {t('chats.create.error')}
           </p>
         )}
-        <DialogDescription className="text-xs">{t('chats.create.public')}</DialogDescription>
+        <DialogDescription className="text-xs">{t(isPublic ? 'chats.create.publicHint' : 'chats.create.privateHint')}</DialogDescription>
         <Button type="submit" size="lg" disabled={pending} className="h-11 w-full text-base">
           {pending && <Loader2 className="animate-spin" />}
           {t('chats.create.submit')}
@@ -197,12 +224,12 @@ export function CreateGroupDialog({
     onOpenChange(next)
   }
 
-  const submit = (name: string, description: string) => {
+  const submit = (name: string, description: string, isPublic: boolean) => {
     // isPending обновляется после перерисовки, а двойной клик приходит раньше.
     if (sending.current) return
     sending.current = true
     create.mutate(
-      { name, description },
+      { name, description, isPublic },
       {
         onSettled: () => {
           sending.current = false
@@ -210,7 +237,7 @@ export function CreateGroupDialog({
         onSuccess: (group) => {
           clearGroupDraft()
           create.reset()
-          onCreated({ id: group.id, name: group.name })
+          onCreated({ id: group.id, name: group.name, isPublic: group.is_public, inviteCode: group.invite_code })
         },
       },
     )

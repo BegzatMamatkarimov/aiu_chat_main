@@ -1,6 +1,6 @@
 import { useParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { ChevronLeft, MessageCircleOff } from 'lucide-react'
+import { ChevronLeft, Lock, MessageCircleOff } from 'lucide-react'
 import { ChatAvatar } from '@/components/glass/chat-avatar'
 import { GlassPattern } from '@/components/glass/glass-background'
 import { Button } from '@/components/ui/button'
@@ -35,7 +35,7 @@ function Subtitle({ chat }: { chat: ChatHeader }) {
   const text =
     chat.type === 'group'
       ? typeof members.data === 'number'
-        ? t('chat.members', { count: members.data })
+        ? (chat.isPrivate ? `${t('chat.privateGroup')} · ` : '') + t('chat.members', { count: members.data })
         : ''
       : courseLabel(chat.peer?.course)
   if (!text) return null
@@ -57,7 +57,10 @@ export function ChatPage() {
           <BackButton />
           <ChatAvatar chatId={chat.id} label={initials(chat.title)} src={chat.avatarUrl} size={40} side="header" />
           <div className="min-w-0 flex-1">
-            <h2 className="truncate text-base font-semibold leading-tight">{chat.title}</h2>
+            <div className="flex min-w-0 items-center gap-1.5">
+              <h2 className="truncate text-base font-semibold leading-tight">{chat.title}</h2>
+              {chat.isPrivate && <Lock aria-hidden="true" className="size-3.5 shrink-0 text-muted-foreground" />}
+            </div>
             <Subtitle chat={chat} />
           </div>
           {chat.type === 'group' && <GroupMenu chatId={chat.id} title={chat.title} />}

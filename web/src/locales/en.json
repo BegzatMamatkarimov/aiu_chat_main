@@ -181,12 +181,19 @@
       "nameRequired": "Enter a group name",
       "description": "Description (optional)",
       "descriptionPlaceholder": "What the group is about and who it's for",
-      "public": "Every student will be able to find and join the group",
       "submit": "Create",
       "error": "Couldn't create the group. Check your connection and try again",
       "done": "Group \"{{name}}\" created",
-      "emptyAction": "Create group"
-    }
+      "emptyAction": "Create group",
+      "typeLabel": "Group type",
+      "typePublic": "Public",
+      "typePrivate": "Private",
+      "publicHint": "Every student will be able to find the group in search and join it",
+      "privateHint": "The group is not in search. Joining is possible only via an invite link",
+      "donePrivate": "Private group “{{name}}” created. Invite members with the link",
+      "copyLink": "Copy link"
+    },
+    "privateGroup": "Private group"
   },
   "chat": {
     "soon": "Messages are coming soon",
@@ -217,7 +224,8 @@
       "confirm": "Leave",
       "done": "You left the group “{{name}}”",
       "error": "Couldn’t leave the group. Please try again"
-    }
+    },
+    "privateGroup": "Private group"
   },
   "join": {
     "action": "Join",

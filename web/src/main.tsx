@@ -24,3 +24,5 @@ createRoot(document.getElementById('root')!).render(
     </ThemeProvider>
   </StrictMode>,
 )
+
+window.__aiuBootDone?.()

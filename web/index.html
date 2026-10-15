@@ -14,10 +14,78 @@
         if (dark) document.documentElement.classList.add('dark');
       } catch (e) {}
     </script>
+    <script>
+      // Загрузочная заглушка: бандл (и его i18n) здесь недоступен, поэтому строки лежат прямо в скрипте
+      // (осознанное исключение из правила «без текста в коде»).
+      (function () {
+        var KEY = 'aiu-chunk-reload-at';
+        var TEXT = {
+          ru: ['Не удалось загрузить страницу', 'Проверьте подключение к интернету', 'Обновить'],
+          kk: ['Бетті жүктеу мүмкін болмады', 'Интернет байланысын тексеріңіз', 'Жаңарту'],
+          en: ["Couldn't load the page", 'Check your internet connection', 'Refresh'],
+        };
+        var timer;
+        function show() {
+          if (window.__aiuBooted) return;
+          var el = document.getElementById('aiu-boot-fallback');
+          if (!el) return;
+          var lang = ((navigator.language || 'ru').split('-')[0] || 'ru').toLowerCase();
+          var t = TEXT[lang] || TEXT.ru;
+          document.getElementById('aiu-bf-title').textContent = t[0];
+          document.getElementById('aiu-bf-hint').textContent = t[1];
+          var btn = document.getElementById('aiu-bf-btn');
+          btn.textContent = t[2];
+          btn.onclick = function () { location.reload(); };
+          el.hidden = false;
+        }
+        function reloadOnce() {
+          var last = 0;
+          try { last = Number(sessionStorage.getItem(KEY)) || 0; } catch (e) {}
+          if (Date.now() - last < 10000) return false;
+          try { sessionStorage.setItem(KEY, String(Date.now())); } catch (e) { return false; }
+          location.reload();
+          return true;
+        }
+        window.addEventListener('error', function (e) {
+          var n = e.target;
+          if (!n || (n.tagName !== 'SCRIPT' && n.tagName !== 'LINK')) return;
+          var url = n.src || n.href || '';
+          if (url.indexOf('/assets/') === -1 || window.__aiuBooted) return;
+          if (!reloadOnce()) show();
+        }, true);
+        timer = setTimeout(show, 12000);
+        window.__aiuBootDone = function () {
+          window.__aiuBooted = true;
+          clearTimeout(timer);
+          var el = document.getElementById('aiu-boot-fallback');
+          if (el) el.remove();
+        };
+      })();
+    </script>
     <title>AIU Chat</title>
   </head>
   <body>
     <div id="root"></div>
+    <div id="aiu-boot-fallback" hidden>
+      <div class="aiu-bf-card">
+        <h1 id="aiu-bf-title"></h1>
+        <p id="aiu-bf-hint"></p>
+        <button id="aiu-bf-btn" type="button"></button>
+      </div>
+    </div>
+    <style>
+      #aiu-boot-fallback { position: fixed; inset: 0; z-index: 2147483647; display: flex; align-items: center; justify-content: center; padding: 16px; background: #f8f7fc; color: #1c1b22; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+      #aiu-boot-fallback[hidden] { display: none; }
+      .aiu-bf-card { width: 100%; max-width: 400px; padding: 24px; border-radius: 24px; background: #fff; box-shadow: 0 8px 32px rgba(57, 48, 133, 0.12); }
+      .aiu-bf-card h1 { margin: 0 0 12px; font-size: 24px; font-weight: 700; }
+      .aiu-bf-card p { margin: 0 0 20px; font-size: 14px; opacity: 0.7; }
+      .aiu-bf-card button { width: 100%; height: 44px; border: 0; border-radius: 10px; background: #393085; color: #fff; font: inherit; font-weight: 500; cursor: pointer; }
+      @media (prefers-color-scheme: dark) {
+        #aiu-boot-fallback { background: #0e141f; color: #f2f2f5; }
+        .aiu-bf-card { background: #181f2c; box-shadow: none; }
+        .aiu-bf-card button { background: #8c82e6; color: #0e141f; }
+      }
+    </style>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

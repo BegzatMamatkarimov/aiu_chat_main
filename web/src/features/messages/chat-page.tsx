@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import { useMatch, useNavigate, useParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { ChevronLeft, Lock, MessageCircleOff } from 'lucide-react'
@@ -7,10 +8,12 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { useCloseChat } from '@/features/chats/use-close-chat'
 import { useChatHeader, useMemberCount, type ChatHeader } from '@/features/chats/use-chat-header'
+import { ChatBody } from '@/features/messages/chat-body'
 import { GroupMenu } from '@/features/messages/group-menu'
 import { HEADER_CLASS } from '@/features/messages/header-class'
 import { InfoLayer } from '@/features/messages/info-layer'
 import { FROM_CHAT_STATE } from '@/features/messages/use-close-info'
+import { useKeyboardFit } from '@/features/messages/use-keyboard-fit'
 import { initials } from '@/features/profile/initials'
 import { useCourseLabel } from '@/features/profile/course'
 
@@ -50,6 +53,8 @@ export function ChatPage() {
   const navigate = useNavigate()
   const state = useChatHeader(chatId)
   const infoOpen = useMatch('/c/:chatId/info') !== null
+  const fitRef = useRef<HTMLDivElement>(null)
+  useKeyboardFit(fitRef, state.status === 'ready')
 
   if (state.status === 'ready') {
     const { chat } = state
@@ -69,7 +74,7 @@ export function ChatPage() {
     return (
       <div className="relative h-full overflow-hidden">
         {/* Пока открыт «О группе», чат под ним недоступен; на десктопе его не видно совсем. */}
-        <div className={cn('absolute inset-0', infoOpen && 'md:invisible')} inert={infoOpen}>
+        <div ref={fitRef} className={cn('absolute inset-0', infoOpen && 'md:invisible')} inert={infoOpen}>
           <GlassPattern />
           <header className={HEADER_CLASS}>
             <BackButton />
@@ -87,9 +92,7 @@ export function ChatPage() {
             )}
             {isGroup && <GroupMenu chatId={chat.id} title={chat.title} />}
           </header>
-          <div className="absolute inset-0 flex items-center justify-center px-4 pt-[calc(4rem+env(safe-area-inset-top))]">
-            <p className="glass-pill relative rounded-full px-4 py-1.5 text-sm text-muted-foreground">{t('chat.soon')}</p>
-          </div>
+          <ChatBody key={chat.id} chatId={chat.id} isGroup={isGroup} />
         </div>
         <InfoLayer />
       </div>

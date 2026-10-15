@@ -186,7 +186,6 @@
     "privateGroup": "Private group"
   },
   "chat": {
-    "soon": "Messages are coming soon",
     "notFound": {
       "title": "Chat not found",
       "hint": "It may have been deleted, or you don’t have access to it",
@@ -217,7 +216,28 @@
       "error": "Couldn’t leave the group. Please try again"
     },
     "privateGroup": "Private group",
-    "openInfo": "Group info: {{name}}"
+    "openInfo": "Group info: {{name}}",
+    "feed": {
+      "label": "Messages",
+      "empty": "No messages yet. Be the first to write!",
+      "loadError": "Could not load messages",
+      "olderError": "Could not load older ones",
+      "scrollDown": "Jump to latest messages",
+      "unknownAuthor": "User",
+      "attachment": "Attachment"
+    },
+    "composer": {
+      "placeholder": "Message",
+      "send": "Send",
+      "remaining": "Characters left: {{count}}"
+    },
+    "status": {
+      "sending": "Sending",
+      "sent": "Sent",
+      "failed": "Not sent",
+      "retry": "Retry",
+      "discard": "Delete draft"
+    }
   },
   "join": {
     "action": "Join",

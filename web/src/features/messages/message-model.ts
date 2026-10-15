@@ -109,6 +109,21 @@ export function parseReactions(raw: unknown, myId: string | undefined): MessageR
     .map(([emoji, v]) => ({ emoji, count: v.count, mine: v.mine }))
 }
 
+/** Локальное переключение моей реакции (оптимистичное обновление); порядок как у parseReactions, чтобы ответ сервера не переставлял чипы. */
+export function toggleReactionLocal(reactions: readonly MessageReaction[], emoji: string): MessageReaction[] {
+  const cur = reactions.find((r) => r.emoji === emoji)
+  if (!cur) {
+    return [...reactions, { emoji, count: 1, mine: true }].sort((a, b) => (a.emoji < b.emoji ? -1 : a.emoji > b.emoji ? 1 : 0))
+  }
+  if (cur.mine) return reactions.flatMap((r) => (r.emoji !== emoji ? [r] : r.count > 1 ? [{ ...r, count: r.count - 1, mine: false }] : []))
+  return reactions.map((r) => (r.emoji === emoji ? { ...r, count: r.count + 1, mine: true } : r))
+}
+
+/** Имя автора для подписи: имя, иначе @username, иначе запасной текст. */
+export function authorLabel(author: MessageAuthor | null, fallback: string) {
+  return author?.displayName || (author?.username ? `@${author.username}` : '') || fallback
+}
+
 function parseReply(raw: unknown): ReplyPreview | null {
   const o = rec(raw)
   const id = o && str(o.id)

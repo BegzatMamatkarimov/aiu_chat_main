@@ -4,6 +4,9 @@
   /* Орнамент «қошқар мүйіз» (маски): --orn-bg — тайл для фона */
   --orn-bg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cg%3E%3Cpath d='M24 23C24 16 19.5 12 14 12C9 12 5.5 15.5 7 19C8.2 21.7 11.8 21.6 12.6 19.3C13.2 17.5 11.4 16.3 10 17.2'/%3E%3Cpath d='M24 23C24 16 28.5 12 34 12C39 12 42.5 15.5 41 19C39.8 21.7 36.2 21.6 35.4 19.3C34.8 17.5 36.6 16.3 38 17.2'/%3E%3Cpath d='M24 2.5L27 6.2L24 9.9L21 6.2Z'/%3E%3Cpath d='M24 10.5V23'/%3E%3C/g%3E%3Cg transform='translate(24 24)'%3E%3Cpath d='M24 23C24 16 19.5 12 14 12C9 12 5.5 15.5 7 19C8.2 21.7 11.8 21.6 12.6 19.3C13.2 17.5 11.4 16.3 10 17.2'/%3E%3Cpath d='M24 23C24 16 28.5 12 34 12C39 12 42.5 15.5 41 19C39.8 21.7 36.2 21.6 35.4 19.3C34.8 17.5 36.6 16.3 38 17.2'/%3E%3Cpath d='M24 2.5L27 6.2L24 9.9L21 6.2Z'/%3E%3Cpath d='M24 10.5V23'/%3E%3C/g%3E%3Cg transform='translate(-24 24)'%3E%3Cpath d='M24 23C24 16 19.5 12 14 12C9 12 5.5 15.5 7 19C8.2 21.7 11.8 21.6 12.6 19.3C13.2 17.5 11.4 16.3 10 17.2'/%3E%3Cpath d='M24 23C24 16 28.5 12 34 12C39 12 42.5 15.5 41 19C39.8 21.7 36.2 21.6 35.4 19.3C34.8 17.5 36.6 16.3 38 17.2'/%3E%3Cpath d='M24 2.5L27 6.2L24 9.9L21 6.2Z'/%3E%3Cpath d='M24 10.5V23'/%3E%3C/g%3E%3C/svg%3E");
 
+  --menu-scrim: rgb(20 16 48 / 32%);
+  --flash: rgb(255 196 61 / 55%);
+
   --out-a: #393085;
   --out-b: #4a3fa6;
   --out-fg: #fff;
@@ -82,6 +85,8 @@
 }
 
 .dark {
+  --menu-scrim: rgb(0 0 0 / 50%);
+  --flash: rgb(255 196 61 / 40%);
   --out-a: color-mix(in oklab, var(--primary) 70%, black);
   --out-b: color-mix(in oklab, var(--primary) 60%, oklch(0.4 0.2 300));
   --in-bg: color-mix(in oklab, oklch(0.3 0.02 250) 85%, transparent);
@@ -313,6 +318,7 @@ button, [role="tab"] {
     -webkit-user-select: none;
     user-select: none;
     -webkit-touch-callout: none;
+    touch-action: pan-y;
   }
 }
 .glass-bubble-out {
@@ -401,4 +407,123 @@ button, [role="tab"] {
   .glass-msg-in-out,
   .glass-msg-in-in { animation: none; }
   .glass-day { transition: none; }
+}
+
+/* ---------- Меню сообщения, свайп-ответ, подсветка ---------- */
+@keyframes glass-pop {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes glass-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.glass-menu-pop {
+  animation: glass-pop 160ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+.glass-menu-fade {
+  animation: glass-fade 150ms ease-out both;
+}
+/* Пузырь остаётся не затемнённым: вырез по его границам, всё вокруг гасит гигантская тень */
+.glass-menu-spot {
+  box-shadow: 0 0 0 200vmax var(--menu-scrim);
+}
+.glass-menu-surface {
+  background: var(--glass-panel-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 14px 36px -10px var(--glass-shadow);
+  -webkit-backdrop-filter: blur(40px);
+  backdrop-filter: blur(40px);
+  color: var(--foreground);
+}
+.glass-menu-item {
+  transition: background-color 120ms ease-out;
+}
+.glass-menu-item:active,
+.glass-menu-item:focus-visible {
+  background: color-mix(in oklab, var(--foreground) 10%, transparent);
+  outline: none;
+}
+.glass-menu-emoji {
+  transition: transform 150ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.glass-menu-emoji:active {
+  transform: scale(0.88);
+}
+.glass-menu-emoji:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+.glass-menu-emoji[aria-pressed="true"] {
+  background: color-mix(in oklab, var(--primary) 18%, transparent);
+}
+@media (hover: hover) and (pointer: fine) {
+  .glass-menu-item:hover {
+    background: color-mix(in oklab, var(--foreground) 8%, transparent);
+  }
+  .glass-menu-emoji:hover {
+    background: color-mix(in oklab, var(--foreground) 10%, transparent);
+    transform: scale(1.12);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .glass-menu-pop { animation: glass-fade 120ms ease-out both; }
+  .glass-menu-item,
+  .glass-menu-emoji { transition: none; }
+  .glass-menu-emoji:hover,
+  .glass-menu-emoji:active { transform: none; }
+}
+
+/* Кнопка «⋯» у пузыря: только там, где есть наведение */
+.glass-msg-more { display: none; }
+@media (hover: hover) and (pointer: fine) {
+  .glass-msg-more {
+    display: flex;
+    opacity: 0;
+    transition: opacity 120ms ease-out;
+  }
+  .glass-msg-wrap:hover .glass-msg-more,
+  .glass-msg-wrap:focus-within .glass-msg-more,
+  .glass-msg-more:focus-visible { opacity: 1; }
+}
+
+/* Свайп ответа: --sx — сдвиг, --sp — прогресс 0..1 (пишет хук прямо в DOM) */
+.glass-swipe {
+  transform: translateX(var(--sx, 0px));
+}
+.glass-swipe-icon {
+  opacity: var(--sp, 0);
+  transform: translateY(-50%) scale(calc(0.6 + 0.4 * var(--sp, 0)));
+  pointer-events: none;
+}
+
+/* Подсветка исходного сообщения после перехода по цитате */
+@keyframes glass-flash {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+.glass-bubble.glass-flash::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--flash);
+  pointer-events: none;
+  animation: glass-flash 1300ms ease-out both;
+}
+
+/* Цитата над полем ввода */
+.glass-quote-composer {
+  background: var(--quote-in-bg);
+  border-left: 3px solid var(--quote-in-bar);
+}
+@keyframes glass-quote-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+.glass-reply-in {
+  animation: glass-quote-in 160ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .glass-reply-in { animation: none; }
 }

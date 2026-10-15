@@ -5,7 +5,8 @@ import { applyDeletedMessage, applyIncomingMessage } from '@/features/chats/chat
 import { MY_CHATS_KEY } from '@/features/chats/use-my-chats'
 import { setRealtimeHealthy } from '@/features/messages/connection-status'
 import { parseMessage, parseReactions } from '@/features/messages/message-model'
-import { markMessageDeleted, setMessageReactions, syncLatest, upsertMessage } from '@/features/messages/use-chat-messages'
+import { applyServerReactions } from '@/features/messages/reactions'
+import { markMessageDeleted, syncLatest, upsertMessage } from '@/features/messages/use-chat-messages'
 
 /**
  * Лимит одновременных каналов на пользователя (в Supabase на проект ~200 соединений, это защита от гигантских списков).
@@ -94,7 +95,7 @@ export function startRealtime({ qc, myId, getToken, getOpenChatId }: RealtimeOpt
   const onReaction = (chatId: string, payload: unknown) => {
     const o = payload && typeof payload === 'object' ? (payload as { message_id?: unknown; reactions?: unknown }) : null
     if (!o || typeof o.message_id !== 'string') return
-    setMessageReactions(qc, chatId, o.message_id, parseReactions(o.reactions, myId))
+    applyServerReactions(qc, chatId, o.message_id, parseReactions(o.reactions, myId))
   }
 
   const arm = (chatId: string, entry: ChatEntry) => {

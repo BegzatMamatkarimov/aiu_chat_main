@@ -10,6 +10,7 @@ import {
   type MessageReaction,
 } from '@/features/messages/message-model'
 import { removePending, usePendingMessages } from '@/features/messages/pending-messages'
+import { markReplyDeleted } from '@/features/messages/reply-store'
 
 export const PAGE_SIZE = 50
 export const messagesKey = (chatId: string) => ['messages', chatId] as const
@@ -109,11 +110,36 @@ function mapFeed(qc: QueryClient, chatId: string, fn: (m: ChatMessage) => ChatMe
 
 /** Удаление из realtime: сообщение становится «удалённым», превью ответов на него тоже. Без кэша ленты ничего не делает. */
 export function markMessageDeleted(qc: QueryClient, chatId: string, id: string) {
+  markReplyDeleted(chatId, id)
   mapFeed(qc, chatId, (m) => {
     if (m.id === id) return m.deleted ? m : { ...m, deleted: true, body: null, attachments: [], reactions: [] }
     if (m.reply?.id === id && !m.reply.deleted) return { ...m, reply: { ...m.reply, deleted: true, body: null } }
     return m
   })
+}
+
+/** Откат оптимистичного удаления: сообщение возвращается, превью ответов на него тоже. */
+export function restoreMessage(qc: QueryClient, msg: ChatMessage) {
+  mapFeed(qc, msg.chatId, (m) => {
+    if (m.id === msg.id) return msg
+    if (m.reply?.id === msg.id && m.reply.deleted) return { ...m, reply: { ...m.reply, deleted: false, body: msg.body } }
+    return m
+  })
+}
+
+/** Точечное изменение сообщения в кэше ленты. */
+export function patchMessage(qc: QueryClient, chatId: string, id: string, fn: (m: ChatMessage) => ChatMessage) {
+  mapFeed(qc, chatId, (m) => (m.id === id ? fn(m) : m))
+}
+
+/** Сообщение из кэша ленты (без pending). */
+export function findCachedMessage(qc: QueryClient, chatId: string, id: string): ChatMessage | null {
+  const data = qc.getQueryData<MessagesCache>(messagesKey(chatId))
+  for (const page of data?.pages ?? []) {
+    const m = page.items.find((x) => x.id === id)
+    if (m) return m
+  }
+  return null
 }
 
 /** Реакции из realtime заменяют реакции сообщения целиком. */

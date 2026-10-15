@@ -228,7 +228,8 @@
       "olderError": "Could not load older ones",
       "scrollDown": "Jump to latest messages",
       "unknownAuthor": "User",
-      "attachment": "Attachment"
+      "attachment": "Attachment",
+      "tooOld": "The message is too old"
     },
     "composer": {
       "placeholder": "Message",
@@ -241,6 +242,29 @@
       "failed": "Not sent",
       "retry": "Retry",
       "discard": "Delete draft"
+    },
+    "msgMenu": {
+      "label": "Message actions",
+      "more": "Message actions",
+      "reactions": "Quick reactions",
+      "reply": "Reply",
+      "copy": "Copy",
+      "copied": "Copied",
+      "copyError": "Could not copy",
+      "delete": "Delete",
+      "reactError": "Could not add the reaction. Please try again"
+    },
+    "delete": {
+      "title": "Delete message?",
+      "titleOther": "Delete the message from {{name}}?",
+      "body": "It will disappear for everyone.",
+      "cancel": "Cancel",
+      "confirm": "Delete",
+      "error": "Could not delete the message. Please try again"
+    },
+    "reply": {
+      "cancel": "Cancel reply",
+      "jump": "Go to the original message"
     }
   },
   "join": {

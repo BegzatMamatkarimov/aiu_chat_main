@@ -73,7 +73,7 @@ export function ChatPage() {
       </>
     )
     return (
-      <div className="relative h-full overflow-hidden">
+      <div className="relative h-full overflow-clip">
         {/* Пока открыт «О группе», чат под ним недоступен; на десктопе его не видно совсем. */}
         <div ref={fitRef} className={cn('absolute inset-0', infoOpen && 'md:invisible')} inert={infoOpen}>
           <GlassPattern />
@@ -103,7 +103,7 @@ export function ChatPage() {
 
   if (state.status === 'loading') {
     return (
-      <div className="relative h-full overflow-hidden">
+      <div className="relative h-full overflow-clip">
         <GlassPattern />
         <header className={HEADER_CLASS}>
           <BackButton />
@@ -115,7 +115,7 @@ export function ChatPage() {
 
   const missing = state.status === 'missing'
   return (
-    <div className="relative h-full overflow-hidden">
+    <div className="relative h-full overflow-clip">
       <GlassPattern />
       <header className={HEADER_CLASS}>
         <BackButton />

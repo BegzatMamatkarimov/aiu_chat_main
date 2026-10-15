@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/features/auth/use-auth'
 import type { ChatSummary } from '@/features/chats/chat-model'
 import { MY_CHATS_KEY } from '@/features/chats/use-my-chats'
-import { parseMessage, type ChatMessage, type MessageAuthor } from '@/features/messages/message-model'
+import { parseMessage, type ChatMessage, type MessageAuthor, type ReplyPreview } from '@/features/messages/message-model'
 import { addPending, getPendingMessage, patchPending, removePending } from '@/features/messages/pending-messages'
 import { messagesKey, upsertMessage } from '@/features/messages/use-chat-messages'
 
@@ -81,7 +81,7 @@ export function useSendMessage(chatId: string) {
   )
 
   const send = useCallback(
-    (text: string) => {
+    (text: string, reply: ReplyPreview | null = null) => {
       const body = text.trim()
       if (!myId || !body || body.length > MAX_BODY) return false
       const msg: ChatMessage = {
@@ -92,8 +92,8 @@ export function useSendMessage(chatId: string) {
         body,
         createdAt: new Date().toISOString(),
         deleted: false,
-        replyTo: null,
-        reply: null,
+        replyTo: reply?.id ?? null,
+        reply,
         attachments: [],
         reactions: [],
         status: 'sending',

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useSyncExternalStore } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useInfiniteQuery, useQueryClient, type InfiniteData, type QueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import {
@@ -8,7 +8,7 @@ import {
   type ChatMessage,
   type MessageCursor,
 } from '@/features/messages/message-model'
-import { usePendingMessages } from '@/features/messages/pending-messages'
+import { removePending, usePendingMessages } from '@/features/messages/pending-messages'
 
 export const PAGE_SIZE = 50
 export const messagesKey = (chatId: string) => ['messages', chatId] as const
@@ -136,6 +136,18 @@ export function useChatMessages(chatId: string, myId: string | undefined) {
     }
   }, [qc, chatId, myId])
 
+  // Подтверждённые сервером pending-сообщения уходят, когда они есть в кэше ленты; если лента загрузилась без них — кладём серверную версию в кэш.
+  useEffect(() => {
+    if (!query.data) return
+    const ids = new Set<string>()
+    for (const page of query.data.pages) for (const m of page.items) ids.add(m.id)
+    for (const p of pending) {
+      if (p.status !== 'sent') continue
+      if (ids.has(p.id)) removePending(chatId, p.id)
+      else upsertMessage(qc, p)
+    }
+  }, [qc, chatId, query.data, pending])
+
   const messages = useMemo(() => flatten(query.data, pending), [query.data, pending])
   return {
     messages,
@@ -148,13 +160,4 @@ export function useChatMessages(chatId: string, myId: string | undefined) {
     isFetchNextPageError: query.isFetchNextPageError,
     fetchNextPage: query.fetchNextPage,
   }
-}
-
-/** Загружена ли лента чата (отправлять можно только в загруженную: серверное сообщение вставляется в её кэш). */
-export function useFeedLoaded(chatId: string) {
-  const qc = useQueryClient()
-  return useSyncExternalStore(
-    (cb) => qc.getQueryCache().subscribe(cb),
-    () => qc.getQueryState(messagesKey(chatId))?.data !== undefined,
-  )
 }

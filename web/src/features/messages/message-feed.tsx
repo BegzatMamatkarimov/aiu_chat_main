@@ -175,7 +175,11 @@ export function MessageFeed({ chatId, isGroup }: { chatId: string; isGroup: bool
       >
         <div
           ref={contentRef}
-          className="mx-auto max-w-3xl pb-[calc(var(--composer-h,4.5rem)+0.75rem)]"
+          className={cn(
+            'mx-auto max-w-3xl pb-[calc(var(--composer-h,4.5rem)+0.75rem)]',
+            // Лента ещё не загружена, а свои сообщения уже есть: прижимаем их к полю ввода.
+            !loaded && messages.length > 0 && 'flex min-h-full flex-col justify-end',
+          )}
         >
           <div className="flex h-8 items-center justify-center text-xs text-muted-foreground" aria-live="polite">
             {feed.isFetchingNextPage && <span>{t('common.loading')}</span>}
@@ -214,7 +218,14 @@ export function MessageFeed({ chatId, isGroup }: { chatId: string; isGroup: bool
       )}
 
       {feed.isError && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-6 pb-[var(--composer-h,4.5rem)] text-center">
+        <div
+          className={cn(
+            'flex flex-col items-center gap-3 px-6 text-center',
+            messages.length > 0
+              ? 'glass-pill absolute inset-x-3 top-3 z-10 rounded-2xl py-3 md:mx-auto md:max-w-sm'
+              : 'absolute inset-0 justify-center pb-[var(--composer-h,4.5rem)]',
+          )}
+        >
           <p className="text-base font-semibold">{t('chat.feed.loadError')}</p>
           <Button type="button" variant="secondary" onClick={() => void feed.refetch()}>
             {t('chats.retry')}

@@ -5,7 +5,6 @@ import { cn } from '@/lib/utils'
 import { useAuth } from '@/features/auth/use-auth'
 import { getDraft, setDraft } from '@/features/messages/drafts'
 import { MAX_BODY, useSendMessage } from '@/features/messages/send-message'
-import { useFeedLoaded } from '@/features/messages/use-chat-messages'
 
 /** 6 строк по 24px (leading-6). */
 const MAX_HEIGHT = 144
@@ -16,11 +15,10 @@ export function Composer({ chatId }: { chatId: string }) {
   const { user } = useAuth()
   const uid = user?.id ?? ''
   const { send } = useSendMessage(chatId)
-  const feedLoaded = useFeedLoaded(chatId)
   const [text, setText] = useState(() => getDraft(uid, chatId))
   const area = useRef<HTMLTextAreaElement>(null)
 
-  const canSend = feedLoaded && text.trim().length > 0 && text.length <= MAX_BODY
+  const canSend = text.trim().length > 0 && text.length <= MAX_BODY
   const remaining = MAX_BODY - text.length
 
   useLayoutEffect(() => {

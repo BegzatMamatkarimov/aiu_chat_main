@@ -6,7 +6,7 @@ import type { ChatSummary } from '@/features/chats/chat-model'
 import { MY_CHATS_KEY } from '@/features/chats/use-my-chats'
 import { parseMessage, type ChatMessage, type MessageAuthor } from '@/features/messages/message-model'
 import { addPending, getPendingMessage, patchPending, removePending } from '@/features/messages/pending-messages'
-import { upsertMessage } from '@/features/messages/use-chat-messages'
+import { messagesKey, upsertMessage } from '@/features/messages/use-chat-messages'
 
 export const MAX_BODY = 4000
 
@@ -61,8 +61,9 @@ async function deliver(qc: QueryClient, msg: ChatMessage, myId: string, myName: 
     patchPending(msg.chatId, msg.id, { status: 'failed' })
     return
   }
-  upsertMessage(qc, saved)
-  removePending(msg.chatId, msg.id)
+  // Серверная версия остаётся в pending, пока не окажется в кэше ленты (его снимает useChatMessages): без мигания и без дублей.
+  patchPending(msg.chatId, msg.id, saved)
+  if (qc.getQueryData(messagesKey(msg.chatId))) upsertMessage(qc, saved)
   touchChatList(qc, saved, myId, myName)
 }
 

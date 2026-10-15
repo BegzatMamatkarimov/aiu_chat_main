@@ -24,6 +24,7 @@ import {
 } from '@/features/chats/use-public-groups'
 import { useMyChats, usePrivateGroupIds } from '@/features/chats/use-my-chats'
 import { useFolderSwipe } from '@/features/chats/use-folder-swipe'
+import { ConnectionBanner } from '@/features/messages/connection-banner'
 import { useHeight } from '@/lib/use-height'
 import { useIsDesktop } from '@/lib/use-media-query'
 
@@ -304,6 +305,7 @@ export function ChatListPanel() {
             <ProfileMenu />
           </div>
         </div>
+        <ConnectionBanner className="mt-2" />
         <label className="glass-field mt-3 flex h-10 items-center gap-2 rounded-full px-3.5 text-muted-foreground shadow-sm focus-within:ring-2 focus-within:ring-primary/40">
           <Search className="size-4 shrink-0" />
           <input

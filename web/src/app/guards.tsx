@@ -2,6 +2,7 @@ import { Navigate, Outlet, useLocation, useSearchParams } from 'react-router'
 import { useAuth } from '@/features/auth/use-auth'
 import { getSafeNext } from '@/features/auth/safe-next'
 import { PageSpinner } from '@/components/page-spinner'
+import { RealtimeSync } from '@/features/messages/realtime-sync'
 
 export function RequireAuth() {
   const { session, initializing, profile, profileLoading } = useAuth()
@@ -15,7 +16,12 @@ export function RequireAuth() {
   if (profile && !profile.username && pathname !== '/onboarding') {
     return <Navigate to={'/onboarding?next=' + next} replace />
   }
-  return <Outlet />
+  return (
+    <>
+      <RealtimeSync />
+      <Outlet />
+    </>
+  )
 }
 
 export function RedirectIfAuthed() {

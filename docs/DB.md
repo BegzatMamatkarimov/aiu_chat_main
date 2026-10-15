@@ -122,6 +122,8 @@ PK (user_a, user_b), check user_a < user_b; chat_id unique → chats on delete c
 - Топик `chat:<uuid>`, приватный.
 - События: `message_new`, `message_deleted`, `reaction_changed`.
 - Политика на `realtime.messages` для `authenticated` (select): `realtime.messages.extension = 'broadcast'` и `realtime.topic()` вида `chat:<uuid>`, где пользователь — участник чата. Невалидный uuid не должен вызывать ошибку, только отказ.
+- Новый чат для пользователя: таблица `chat_members` добавлена в публикацию `supabase_realtime` (миграция `20261017000100_realtime_members.sql`, идемпотентная). Клиент слушает `postgres_changes` INSERT с фильтром `user_id=eq.<me>`; RLS `chat_members_select` оставляет только свои строки. Событие лишь заставляет перезагрузить `list_my_chats`, после чего клиент подписывается на `chat:<id>` нового чата. Остальные таблицы в публикацию не входят.
+- Payload `reaction_changed`: `{message_id, chat_id, reactions: [{emoji, count, user_ids}]}`, поэтому клиент сам определяет «моя» реакция по `user_ids`. `message_deleted`: `{id, chat_id}`. `message_new`: `message_payload` (автор, ответ, вложения, реакции).
 
 ## Storage
 
@@ -136,7 +138,7 @@ Docker-образы Supabase здесь недоступны, поэтому т�
 - Схемы `auth`, `storage`, `realtime` подменяются заглушками из `supabase/tests/_stubs.sql`:
   - `auth.users`, `auth.uid()` (берёт `sub` из `request.jwt.claims`);
   - `storage.buckets`, `storage.objects`, `storage.foldername()`;
-  - `realtime.messages`, `realtime.topic()`, `realtime.send()` пишет в таблицу для проверок;
+  - `realtime.messages`, `realtime.topic()`, `realtime.send()` пишет в таблицу для проверок; пустая публикация `supabase_realtime`;
   - роли `anon`, `authenticated`.
 - Скрипт `scripts/db-test.sh` поднимает временный кластер, применяет заглушки, миграции и тесты `supabase/tests/*.test.sql`. Тесты используют `do`-блоки с `raise exception` при провале.
 - Финальная проверка — применение миграций к настоящему проекту Supabase.

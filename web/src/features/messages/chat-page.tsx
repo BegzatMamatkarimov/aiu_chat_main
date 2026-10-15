@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { useCloseChat } from '@/features/chats/use-close-chat'
 import { useChatHeader, useMemberCount, type ChatHeader } from '@/features/chats/use-chat-header'
+import { ConnectionBanner } from '@/features/messages/connection-banner'
 import { ChatBody } from '@/features/messages/chat-body'
 import { GroupMenu } from '@/features/messages/group-menu'
 import { HEADER_CLASS } from '@/features/messages/header-class'
@@ -92,6 +93,7 @@ export function ChatPage() {
             )}
             {isGroup && <GroupMenu chatId={chat.id} title={chat.title} />}
           </header>
+          <ConnectionBanner className="absolute left-1/2 top-[calc(4.25rem+env(safe-area-inset-top))] z-20 -translate-x-1/2 bg-background text-foreground shadow-md ring-1 ring-border md:hidden" />
           <ChatBody key={chat.id} chatId={chat.id} isGroup={isGroup} />
         </div>
         <InfoLayer />

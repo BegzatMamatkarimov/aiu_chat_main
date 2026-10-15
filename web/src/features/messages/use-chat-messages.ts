@@ -7,6 +7,7 @@ import {
   parseMessage,
   type ChatMessage,
   type MessageCursor,
+  type MessageReaction,
 } from '@/features/messages/message-model'
 import { removePending, usePendingMessages } from '@/features/messages/pending-messages'
 
@@ -58,7 +59,7 @@ function mergeLatest(old: MessagesCache | undefined, fresh: MessagesPage): Messa
   return reset
 }
 
-/** Догружает новое с сервера (фокус окна, повторное открытие чата). Realtime (5.3) будет пользоваться теми же функциями кэша. */
+/** Догружает новое с сервера (фокус окна, повторное открытие чата, возврат связи realtime). */
 export async function syncLatest(qc: QueryClient, chatId: string, myId: string | undefined) {
   if (!qc.getQueryData(messagesKey(chatId))) return
   const fresh = await fetchPage(chatId, null, myId)
@@ -85,6 +86,39 @@ export function upsertMessage(qc: QueryClient, msg: ChatMessage) {
     items.splice(at === -1 ? items.length : at, 0, msg)
     return { ...old, pages: [{ ...head, items }, ...old.pages.slice(1)] }
   })
+}
+
+function mapFeed(qc: QueryClient, chatId: string, fn: (m: ChatMessage) => ChatMessage) {
+  qc.setQueryData<MessagesCache>(messagesKey(chatId), (old) => {
+    if (!old) return old
+    let changed = false
+    const pages = old.pages.map((page) => {
+      let pageChanged = false
+      const items = page.items.map((m) => {
+        const next = fn(m)
+        if (next !== m) pageChanged = true
+        return next
+      })
+      if (!pageChanged) return page
+      changed = true
+      return { ...page, items }
+    })
+    return changed ? { ...old, pages } : old
+  })
+}
+
+/** Удаление из realtime: сообщение становится «удалённым», превью ответов на него тоже. Без кэша ленты ничего не делает. */
+export function markMessageDeleted(qc: QueryClient, chatId: string, id: string) {
+  mapFeed(qc, chatId, (m) => {
+    if (m.id === id) return m.deleted ? m : { ...m, deleted: true, body: null, attachments: [], reactions: [] }
+    if (m.reply?.id === id && !m.reply.deleted) return { ...m, reply: { ...m.reply, deleted: true, body: null } }
+    return m
+  })
+}
+
+/** Реакции из realtime заменяют реакции сообщения целиком. */
+export function setMessageReactions(qc: QueryClient, chatId: string, id: string, reactions: MessageReaction[]) {
+  mapFeed(qc, chatId, (m) => (m.id === id && !m.deleted ? { ...m, reactions } : m))
 }
 
 /** Плоский список по возрастанию: серверные сообщения + ещё не подтверждённые (без дублей, серверная версия главнее). */

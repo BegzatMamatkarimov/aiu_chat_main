@@ -86,7 +86,7 @@ function parseAttachments(raw: unknown): MessageAttachment[] {
 }
 
 /** Реакции приходят двумя способами: строками таблицы (emoji, user_id) из select и готовыми счётчиками (emoji, count, user_ids) из RPC. */
-function parseReactions(raw: unknown, myId: string | undefined): MessageReaction[] {
+export function parseReactions(raw: unknown, myId: string | undefined): MessageReaction[] {
   if (!Array.isArray(raw)) return []
   const byEmoji = new Map<string, { count: number; mine: boolean }>()
   for (const item of raw) {

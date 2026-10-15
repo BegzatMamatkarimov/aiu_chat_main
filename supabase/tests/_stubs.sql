@@ -100,3 +100,6 @@ end $$;
 
 grant select on realtime.messages to authenticated;
 grant execute on function realtime.topic() to anon, authenticated, service_role;
+
+-- В Supabase публикация supabase_realtime создана по умолчанию (пустая).
+create publication supabase_realtime;

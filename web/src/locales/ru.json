@@ -187,6 +187,10 @@
     },
     "privateGroup": "Приватная группа"
   },
+  "connection": {
+    "offline": "Нет соединения…",
+    "connecting": "Соединение…"
+  },
   "chat": {
     "notFound": {
       "title": "Чат не найден",

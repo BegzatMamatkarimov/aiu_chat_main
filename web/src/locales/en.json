@@ -185,6 +185,10 @@
     },
     "privateGroup": "Private group"
   },
+  "connection": {
+    "offline": "No connection…",
+    "connecting": "Connecting…"
+  },
   "chat": {
     "notFound": {
       "title": "Chat not found",

@@ -185,6 +185,10 @@
     },
     "privateGroup": "Жабық топ"
   },
+  "connection": {
+    "offline": "Байланыс жоқ…",
+    "connecting": "Қосылу…"
+  },
   "chat": {
     "notFound": {
       "title": "Чат табылмады",

@@ -1,5 +1,6 @@
 import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useMatch } from 'react-router'
 import { ChevronDown, Copy, CornerUpLeft, RotateCcw, Trash2 } from 'lucide-react'
 import { useReducedMotion } from 'motion/react'
 import { toast } from 'sonner'
@@ -96,16 +97,28 @@ export function MessageFeed({ chatId, isGroup }: { chatId: string; isGroup: bool
   const days = useMemo(() => buildDays(messages, myId), [messages, myId])
 
   // Разделитель «Непрочитанные»: счётчик фиксируется один раз при открытии, до mark_read; перед N-м с конца чужим сообщением.
+  // Чат «открыт», пока маршрут — /c/:chatId для него; на телефоне после «назад» слой остаётся смонтированным, но не открыт.
+  const open = useMatch('/c/:chatId/*')?.params.chatId === chatId
   const [divider, setDivider] = useState<{ id: string | null } | null>(null)
+  const [wasOpen, setWasOpen] = useState(open)
+  if (wasOpen !== open) {
+    setWasOpen(open)
+    if (open) setDivider(null)
+  }
   if (divider === null && loaded && (myChats.data || myChats.isError)) {
     const unread = myChats.data?.find((c) => c.id === chatId)?.unread ?? 0
     const others = messages.filter((m) => m.senderId !== myId && m.status === 'sent')
     setDivider({ id: unread > 0 && others.length > 0 ? others[Math.max(0, others.length - unread)].id : null })
   }
   const dividerId = divider?.id ?? null
-  const ready = divider !== null
+  const ready = divider !== null && open
 
-  // Отметка «прочитано»: при открытии, при возврате во вкладку (новые входящие обрабатывает realtime).
+  // Повторное открытие того же смонтированного чата: заново прокручиваем к разделителю.
+  useLayoutEffect(() => {
+    if (!open) initialized.current = false
+  }, [open])
+
+  // Отметка «прочитано»: при каждом переходе в состояние «открыт», при возврате во вкладку (новые входящие обрабатывает realtime).
   useEffect(() => {
     if (!ready) return
     setReadActive(chatId, true)

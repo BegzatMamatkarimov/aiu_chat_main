@@ -14,8 +14,10 @@ import { useMyChats } from '@/features/chats/use-my-chats'
 import { copyText } from '@/features/messages/copy-text'
 import { DayChip } from '@/features/messages/day-chip'
 import { useDeleteMessage } from '@/features/messages/delete-message'
-import { MessageMenuHost, type MenuHandle, type MenuItem, type MenuVia } from '@/features/messages/message-menu'
+import { HEART_REACTION, MessageMenuHost, type MenuHandle, type MenuItem, type MenuVia } from '@/features/messages/message-menu'
 import { useToggleReaction } from '@/features/messages/reactions'
+import { playHeartBurst } from '@/features/messages/heart-burst'
+import { TouchDebugOverlay } from '@/features/messages/touch-debug'
 import { focusComposer, setReplyTarget } from '@/features/messages/reply-store'
 import { useMessageTouch } from '@/features/messages/use-message-touch'
 import { MessageRow } from '@/features/messages/message-row'
@@ -168,7 +170,18 @@ export function MessageFeed({ chatId, isGroup }: { chatId: string; isGroup: bool
       const m = findMessage(id)
       return !!m && !m.deleted && m.status === 'sent'
     },
+    canReact: (id) => {
+      const m = findMessage(id)
+      return !!m && !m.deleted && m.status === 'sent'
+    },
     onLongPress: (id, bubble) => openMenu(id, bubble, 'hold'),
+    onDoubleTap: (id, bubble, t0) => {
+      const m = findMessage(id)
+      if (!m || m.deleted || m.status !== 'sent') return
+      const had = m.reactions.some((r) => r.emoji === HEART_REACTION && r.mine)
+      void toggleReaction(id, HEART_REACTION)
+      if (!had) playHeartBurst(bubble, t0)
+    },
     onReply: (id) => {
       const m = findMessage(id)
       if (m) startReply(m)
@@ -525,6 +538,7 @@ export function MessageFeed({ chatId, isGroup }: { chatId: string; isGroup: bool
       >
         <ChevronDown className="size-6" />
       </button>
+      <TouchDebugOverlay />
       <MessageMenuHost ref={menuHandle} messages={messages} myId={myId} buildItems={menuItems} onReact={react} />
 
       <ConfirmDialog

@@ -3,8 +3,11 @@ import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 import type { ChatMessage } from '@/features/messages/message-model'
+import { touchDebug } from '@/features/messages/touch-debug'
 
 const QUICK_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🙏'] as const
+/** Реакция двойного тапа. */
+export const HEART_REACTION = QUICK_REACTIONS[1]
 
 export type MenuItem = { key: string; label: string; icon: ReactNode; danger?: boolean; run: () => void }
 
@@ -176,6 +179,7 @@ export function MessageMenu({ anchor, scroller, mine, via, myReactions, items, o
   const placed = layout !== null
   useEffect(() => {
     if (!placed) return
+    touchDebug.menuPlaced()
     const root = rootRef.current
     if (via === 'key') root?.querySelector<HTMLElement>('button')?.focus({ preventScroll: true })
     else root?.focus({ preventScroll: true })
@@ -316,7 +320,13 @@ export function MessageMenuHost({ ref, messages, myId, buildItems, onReact }: Ho
   useImperativeHandle(ref, () => ({ open: (s) => setMenu((cur) => (cur && cur.id === s.id ? cur : s)), close }), [close])
 
   const msg = menu ? messages.find((m) => m.id === menu.id) : undefined
-  if (!menu || !msg || msg.deleted) return null
+  if (!menu || !msg || msg.deleted)
+    // Невидимый прогрев: шрифт эмодзи и их раскладка кешируются до первого открытия меню (иначе первое открытие дольше).
+    return (
+      <div aria-hidden="true" className="pointer-events-none fixed left-0 top-0 h-px w-px overflow-hidden opacity-[0.01]">
+        <span className="text-[1.5rem] leading-none">{QUICK_REACTIONS.join('')}</span>
+      </div>
+    )
   return (
     <MessageMenu
       anchor={menu.bubble}

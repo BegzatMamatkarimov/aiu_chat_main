@@ -474,6 +474,26 @@ button, [role="tab"] {
   .glass-menu-emoji:active { transform: none; }
 }
 
+/* Телефон: blur у плавающих элементов ленты и меню дорог для WebKit (iOS), поэтому сплошной фон без backdrop-filter и одна мягкая тень. Шапки не трогаем. */
+@media (pointer: coarse) {
+  .glass-menu-surface {
+    --glass-panel-bg: color-mix(in oklab, var(--background) 100%, transparent);
+    box-shadow: 0 8px 24px -8px var(--glass-shadow);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .glass-pill,
+  .glass-chip {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .glass-composer {
+    background: linear-gradient(var(--composer-bg), var(--composer-bg)), var(--background);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
 /* Кнопка «⋯» у пузыря: только там, где есть наведение */
 .glass-msg-more { display: none; }
 @media (hover: hover) and (pointer: fine) {

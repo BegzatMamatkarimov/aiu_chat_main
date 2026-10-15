@@ -3,11 +3,12 @@ import { useMatch, useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { motion } from 'motion/react'
-import { CircleAlert, MessagesSquare, Search } from 'lucide-react'
+import { CircleAlert, MessagesSquare, Search, SquarePen } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/features/auth/use-auth'
 import { chatTitle, formatChatTime, matchesQuery, type ChatSummary } from '@/features/chats/chat-model'
+import { CreateGroupDialog } from '@/features/chats/create-group-dialog'
 import { ChatListRow, type ChatListItem } from '@/features/chats/chat-list-row'
 import { ProfileMenu } from '@/features/chats/profile-menu'
 import { PublicGroupRow } from '@/features/chats/public-group-row'
@@ -84,6 +85,7 @@ export function ChatListPanel() {
   const list = useMyChats()
   const [folder, setFolder] = useState<Folder>('all')
   const [query, setQuery] = useState('')
+  const [creating, setCreating] = useState(false)
   const headRef = useRef<HTMLDivElement>(null)
   const headH = useHeight(headRef)
   const navigate = useNavigate()
@@ -147,6 +149,13 @@ export function ChatListPanel() {
       onError: (e) => toast.error(e instanceof JoinError && e.denied ? t('chats.join.denied') : t('chats.join.error')),
     })
 
+  const onCreated = (g: { id: string; name: string | null }) => {
+    setCreating(false)
+    setQuery('')
+    void navigate(`/c/${g.id}`, { state: FROM_LIST_STATE })
+    toast.success(t('chats.create.done', { name: g.name }))
+  }
+
   const renderGroups = (groups: PublicGroup[]) =>
     groups.map((g) => (
       <PublicGroupRow key={g.id} group={g} joining={joiningId === g.id} disabled={join.isPending} onJoin={() => onJoin(g)} />
@@ -183,7 +192,17 @@ export function ChatListPanel() {
             </span>
             {t('app.name')}
           </h1>
-          <ProfileMenu />
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              aria-label={t('chats.create.open')}
+              onClick={() => setCreating(true)}
+              className="glass-accent glass-press flex size-10 shrink-0 items-center justify-center rounded-full outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
+              <SquarePen className="size-5" />
+            </button>
+            <ProfileMenu />
+          </div>
         </div>
         <label className="glass-field mt-3 flex h-10 items-center gap-2 rounded-full px-3.5 text-muted-foreground shadow-sm focus-within:ring-2 focus-within:ring-primary/40">
           <Search className="size-4 shrink-0" />
@@ -269,7 +288,11 @@ export function ChatListPanel() {
             <EmptyState icon="chat" title={t('chats.folderEmpty')} />
           ) : (
             <>
-              <EmptyState icon="chat" title={t('chats.empty.title')} hint={t('chats.empty.hint')} />
+              <EmptyState icon="chat" title={t('chats.empty.title')} hint={t('chats.empty.hint')}>
+                <Button type="button" variant="outline" onClick={() => setCreating(true)} className="mt-4">
+                  {t('chats.create.emptyAction')}
+                </Button>
+              </EmptyState>
               {!!popularGroups?.length && (
                 <section>
                   <SectionTitle>{t('chats.sections.popular')}</SectionTitle>
@@ -282,6 +305,7 @@ export function ChatListPanel() {
           visible.map((chat) => <ChatListRow key={chat.id} chat={chat} active={chat.id === activeId} />)
         )}
       </div>
+      <CreateGroupDialog open={creating} onOpenChange={setCreating} onCreated={onCreated} />
     </div>
   )
 }

@@ -1,13 +1,8 @@
 import { useState, type CSSProperties } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
 import { useShell } from '@/features/chats/shell-context'
+import { hueOf } from '@/lib/hue'
 import { EASE_DRAWER } from '@/lib/motion'
-
-function hueOf(id: string) {
-  let h = 0
-  for (const ch of id) h = (h * 31 + ch.codePointAt(0)!) % 360
-  return h
-}
 
 /**
  * Аватар чата. На телефоне (если не reduced-motion) аватар в списке и в шапке открытого чата

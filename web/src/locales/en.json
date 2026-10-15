@@ -165,6 +165,21 @@
       "done": "You joined \"{{name}}\"",
       "error": "Couldn't join the group. Please try again",
       "denied": "This group can't be joined: it's no longer public"
+    },
+    "create": {
+      "open": "New group",
+      "title": "New group",
+      "close": "Close",
+      "name": "Name",
+      "namePlaceholder": "E.g. Algorithms and Data Structures",
+      "nameRequired": "Enter a group name",
+      "description": "Description (optional)",
+      "descriptionPlaceholder": "What the group is about and who it's for",
+      "public": "Every student will be able to find and join the group",
+      "submit": "Create",
+      "error": "Couldn't create the group. Check your connection and try again",
+      "done": "Group \"{{name}}\" created",
+      "emptyAction": "Create group"
     }
   },
   "chat": {

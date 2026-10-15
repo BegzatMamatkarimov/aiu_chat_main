@@ -6,6 +6,8 @@ const SWITCH_RATIO = 0.3
 const SWITCH_VELOCITY = 500
 const EDGE_RESISTANCE = 0.3
 const VELOCITY_WINDOW = 100
+// Зона системных жестов iOS/Android у краёв экрана.
+const SYSTEM_EDGE = 20
 
 type Sample = { x: number; t: number }
 type Gesture = {
@@ -118,6 +120,7 @@ export function useFolderSwipe(options: Options) {
         if (!enabled) return
         finish(false)
         const t = e.changedTouches[0]
+        if (t.clientX < SYSTEM_EDGE || t.clientX > window.innerWidth - SYSTEM_EDGE) return
         gesture.current = {
           id: t.identifier,
           x: t.clientX,

@@ -92,8 +92,8 @@ function CreateGroupForm({
   }
 
   return (
-    <form onSubmit={submit} noValidate className="flex min-h-0 flex-1 flex-col">
-      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain px-5 pb-1 pt-1">
+    <form onSubmit={submit} noValidate className="flex min-h-0 flex-auto flex-col">
+      <div className="min-h-0 flex-auto space-y-3 overflow-y-auto overscroll-contain px-5 pb-1 pt-1">
         <div className="flex items-center gap-3">
           <span
             aria-hidden="true"
@@ -235,6 +235,7 @@ export function CreateGroupDialog({
             <DialogOverlay asChild forceMount>
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: EASE_OUT }} />
             </DialogOverlay>
+            <div className={desktop ? 'pointer-events-none fixed inset-0 z-50 flex items-center justify-center p-4' : 'contents'}>
             <DialogContent
               asChild
               forceMount
@@ -256,8 +257,8 @@ export function CreateGroupDialog({
                 style={desktop ? undefined : { bottom: fit.bottom, maxHeight: fit.height ? fit.height - 8 : undefined }}
                 className={
                   desktop
-                    ? 'glass-panel inset-0 m-auto flex h-fit max-h-[calc(100dvh-2rem)] w-[min(28rem,calc(100vw-2rem))] flex-col rounded-3xl text-foreground'
-                    : 'glass-panel inset-x-0 bottom-0 flex max-h-[calc(100dvh-0.5rem)] flex-col rounded-t-3xl border-b-0 text-foreground'
+                    ? 'glass-panel pointer-events-auto relative flex max-h-[calc(100dvh-2rem)] w-[min(28rem,calc(100vw-2rem))] flex-col rounded-3xl text-foreground'
+                    : 'glass-panel fixed inset-x-0 bottom-0 flex max-h-[calc(100dvh-0.5rem)] flex-col rounded-t-3xl border-b-0 text-foreground'
                 }
               >
                 <div
@@ -277,6 +278,7 @@ export function CreateGroupDialog({
                 <CreateGroupForm nameRef={nameRef} pending={create.isPending} failed={failed} invalidName={invalidName} onSubmit={submit} />
               </motion.div>
             </DialogContent>
+            </div>
           </DialogPortal>
         )}
       </AnimatePresence>

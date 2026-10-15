@@ -28,7 +28,7 @@ function DialogContent({ className, ...props }: React.ComponentProps<typeof Dial
   return (
     <DialogPrimitive.Content
       data-slot="dialog-content"
-      className={cn("fixed z-50 outline-none", className)}
+      className={cn("z-50 outline-none", className)}
       {...props}
     />
   )

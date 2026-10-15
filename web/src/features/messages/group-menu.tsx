@@ -70,7 +70,8 @@ function LeaveDialog({ chatId, title, open, onOpenChange }: { chatId: string; ti
     <Dialog open={open} onOpenChange={change}>
       <DialogPortal>
         <DialogOverlay className="data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0" />
-        <DialogContent className="glass-panel inset-0 m-auto h-fit w-[min(24rem,calc(100vw-2rem))] rounded-3xl p-5 text-foreground duration-150 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95">
+        <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center p-4">
+        <DialogContent className="glass-panel pointer-events-auto relative w-[min(24rem,calc(100vw-2rem))] rounded-3xl p-5 text-foreground duration-150 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95">
           <DialogTitle className="text-lg leading-snug">{t('chat.leave.title', { name: title })}</DialogTitle>
           <DialogDescription className="mt-2 text-sm leading-relaxed">{t('chat.leave.body')}</DialogDescription>
           {adminNote && (
@@ -88,6 +89,7 @@ function LeaveDialog({ chatId, title, open, onOpenChange }: { chatId: string; ti
             </Button>
           </div>
         </DialogContent>
+        </div>
       </DialogPortal>
     </Dialog>
   )

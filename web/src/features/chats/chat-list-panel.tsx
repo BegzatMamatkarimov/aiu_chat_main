@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useMatch, useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
-import { animate, motion, useMotionValue, useReducedMotion, useTransform } from 'motion/react'
+import { motion, useMotionValue, useReducedMotion, useTransform } from 'motion/react'
 import { CircleAlert, MessagesSquare, Search, SquarePen } from 'lucide-react'
 import { toast } from 'sonner'
 import { copyText, inviteUrl } from '@/features/chats/invite-link'
@@ -23,7 +23,6 @@ import {
   type PublicGroup,
 } from '@/features/chats/use-public-groups'
 import { useMyChats, usePrivateGroupIds } from '@/features/chats/use-my-chats'
-import { EASE_OUT } from '@/lib/motion'
 import { useFolderSwipe } from '@/features/chats/use-folder-swipe'
 import { useHeight } from '@/lib/use-height'
 import { useIsDesktop } from '@/lib/use-media-query'
@@ -91,6 +90,9 @@ export function ChatListPanel() {
   const reduce = !!useReducedMotion()
   const desktop = useIsDesktop()
   const pos = useMotionValue(0)
+  const willChange = useMotionValue('auto')
+  // Папка, чьи аватары участвуют в «перелёте» в шапку чата: переключается, когда трек доехал.
+  const [flyFolder, setFlyFolder] = useState<Folder>('all')
   const thumbX = useTransform(pos, (p) => `${p * 100}%`)
   const trackX = useTransform(pos, (p) => `${(-p / FOLDERS.length) * 100}%`)
   const [query, setQuery] = useState('')
@@ -225,7 +227,7 @@ export function ChatListPanel() {
                 <section>
                   <SectionTitle>{t('chats.sections.mine')}</SectionTitle>
                   {visible.map((chat) => (
-                    <ChatListRow key={chat.id} chat={chat} active={chat.id === activeId} />
+                    <ChatListRow key={chat.id} chat={chat} active={chat.id === activeId} fly={f === flyFolder} />
                   ))}
                 </section>
               )}
@@ -254,21 +256,38 @@ export function ChatListPanel() {
             </>
           )
         ) : (
-          visible.map((chat) => <ChatListRow key={chat.id} chat={chat} active={chat.id === activeId} />)
+          visible.map((chat) => <ChatListRow key={chat.id} chat={chat} active={chat.id === activeId} fly={f === flyFolder} />)
         )}
       </>
     )
   }
 
   const swipeOn = !desktop && !searching && !list.isPending
-  const swipe = useFolderSwipe({ enabled: swipeOn, index: folderIndex, count: FOLDERS.length, reduce, pos, onChange: (i) => setFolder(FOLDERS[i]) })
+  const { bind, goTo, clickCapture } = useFolderSwipe({
+    enabled: swipeOn,
+    index: folderIndex,
+    count: FOLDERS.length,
+    reduce,
+    pos,
+    willChange,
+    onChange: (i) => setFolder(FOLDERS[i]),
+  })
   const synced = useRef(0)
   useEffect(() => {
     if (synced.current === folderIndex) return
     synced.current = folderIndex
-    if (reduce) pos.set(folderIndex)
-    else animate(pos, folderIndex, { duration: 0.22, ease: EASE_OUT })
-  }, [folderIndex, pos, reduce])
+    goTo(folderIndex)
+  }, [folderIndex, goTo])
+
+  // Трек остановился на целой папке — только теперь её аватары получают layoutId.
+  useEffect(() => {
+    const settleFly = () => {
+      const p = pos.get()
+      if (Number.isInteger(p) || Math.abs(p - Math.round(p)) < 1e-3) setFlyFolder(FOLDERS[Math.round(p)])
+    }
+    settleFly()
+    return pos.on('animationComplete', settleFly)
+  }, [pos])
 
   const panels = swipeOn ? FOLDERS : ([folder] as readonly Folder[])
 
@@ -343,11 +362,12 @@ export function ChatListPanel() {
       <div
         className="absolute inset-0 overflow-hidden"
         style={{ touchAction: 'pan-y' }}
-        {...swipe.handlers}
+        ref={bind}
+        onClickCapture={clickCapture}
       >
         <motion.div
           className="flex h-full"
-          style={{ width: `${panels.length * 100}%`, x: swipeOn ? trackX : 0 }}
+          style={{ width: `${panels.length * 100}%`, x: swipeOn ? trackX : 0, willChange }}
         >
           {panels.map((f) => (
             <div

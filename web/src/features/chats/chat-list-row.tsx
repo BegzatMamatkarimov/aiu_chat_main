@@ -15,7 +15,7 @@ export type ChatListItem = {
   isPrivate?: boolean
 }
 
-export function ChatListRow({ chat, active }: { chat: ChatListItem; active: boolean }) {
+export function ChatListRow({ chat, active, fly }: { chat: ChatListItem; active: boolean; fly: boolean }) {
   const { t } = useTranslation()
   return (
     <Link
@@ -24,7 +24,7 @@ export function ChatListRow({ chat, active }: { chat: ChatListItem; active: bool
       aria-current={active ? 'page' : undefined}
       className={`glass-press mb-0.5 flex w-full items-center gap-3 rounded-2xl px-2.5 py-2.5 text-left ${active ? 'glass-accent' : 'glass-row'}`}
     >
-      <ChatAvatar chatId={chat.id} label={initials(chat.title)} src={chat.avatarUrl} size={52} side="list" />
+      <ChatAvatar chatId={chat.id} label={initials(chat.title)} src={chat.avatarUrl} size={52} side="list" fly={fly} />
       <span className="min-w-0 flex-1">
         <span className="flex items-baseline justify-between gap-2">
           <span className="flex min-w-0 items-center gap-1">

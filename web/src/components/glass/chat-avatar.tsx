@@ -14,23 +14,26 @@ export function ChatAvatar({
   size,
   side,
   src,
+  fly = true,
 }: {
   chatId: string
   label: string
   src?: string | null
   size: number
   side: 'list' | 'header'
+  /** Строка в неактивной панели папок не получает layoutId: та же группа лежит и в соседней панели. */
+  fly?: boolean
 }) {
   const { desktop, open } = useShell()
   const reduce = useReducedMotion()
-  const shared = !desktop && !reduce && (side === 'list' || open)
+  const shared = !desktop && !reduce && fly && (side === 'list' || open)
   const [failed, setFailed] = useState<string | null>(null)
   const image = src && failed !== src ? src : null
 
   const avatar = (
     <span
       aria-hidden="true"
-      className="glass-av inline-flex shrink-0 select-none items-center justify-center rounded-full font-semibold shadow-md"
+      className={`glass-av inline-flex shrink-0 select-none items-center justify-center rounded-full font-semibold ${side === 'header' ? 'shadow-md' : ''}`}
       style={
         {
           '--h': hueOf(chatId),

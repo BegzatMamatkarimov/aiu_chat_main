@@ -333,6 +333,17 @@ export type Database = {
         Args: { p_id: string }
         Returns: undefined
       }
+      get_group_by_code: {
+        Args: { p_code: string }
+        Returns: {
+          id: string
+          name: string
+          description: string | null
+          avatar_url: string | null
+          member_count: number
+          is_member: boolean
+        }[]
+      }
       get_or_create_direct_chat: {
         Args: { p_other: string }
         Returns: string
@@ -340,6 +351,10 @@ export type Database = {
       join_chat_by_code: {
         Args: { p_code: string }
         Returns: string
+      }
+      leave_chat: {
+        Args: { p_chat_id: string }
+        Returns: undefined
       }
       list_my_chats: {
         Args: Record<PropertyKey, never>

@@ -197,6 +197,34 @@
     },
     "loadError": "Couldn't load the chat",
     "members_one": "{{count}} member",
-    "members_other": "{{count}} members"
+    "members_other": "{{count}} members",
+    "menu": {
+      "label": "Group menu",
+      "invite": "Invite via link",
+      "leave": "Leave group"
+    },
+    "invite": {
+      "shareText": "Join the group “{{name}}” in AIU Chat",
+      "copied": "Link copied",
+      "error": "Couldn’t get the link. Please try again"
+    },
+    "leave": {
+      "title": "Leave “{{name}}”?",
+      "body": "You will stop receiving messages. You can come back via search or a link.",
+      "adminNote": "Admin rights will go to {{name}}.",
+      "adminNoteGeneric": "Admin rights will go to the longest-standing member.",
+      "cancel": "Cancel",
+      "confirm": "Leave",
+      "done": "You left the group “{{name}}”",
+      "error": "Couldn’t leave the group. Please try again"
+    }
+  },
+  "join": {
+    "action": "Join",
+    "open": "Open chat",
+    "done": "You joined the group “{{name}}”",
+    "error": "Couldn’t join the group. Please try again",
+    "invalid": "The invitation is invalid or has expired",
+    "loadError": "Couldn’t load the invitation"
   }
 }

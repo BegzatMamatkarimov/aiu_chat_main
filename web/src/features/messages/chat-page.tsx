@@ -6,6 +6,7 @@ import { GlassPattern } from '@/components/glass/glass-background'
 import { Button } from '@/components/ui/button'
 import { useCloseChat } from '@/features/chats/use-close-chat'
 import { useChatHeader, useMemberCount, type ChatHeader } from '@/features/chats/use-chat-header'
+import { GroupMenu } from '@/features/messages/group-menu'
 import { initials } from '@/features/profile/initials'
 import { useCourseLabel } from '@/features/profile/course'
 
@@ -59,6 +60,7 @@ export function ChatPage() {
             <h2 className="truncate text-base font-semibold leading-tight">{chat.title}</h2>
             <Subtitle chat={chat} />
           </div>
+          {chat.type === 'group' && <GroupMenu chatId={chat.id} title={chat.title} />}
         </header>
         <div className="absolute inset-0 flex items-center justify-center px-4 pt-[calc(4rem+env(safe-area-inset-top))]">
           <p className="glass-pill relative rounded-full px-4 py-1.5 text-sm text-muted-foreground">{t('chat.soon')}</p>

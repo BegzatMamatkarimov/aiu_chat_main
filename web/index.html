@@ -15,6 +15,19 @@
       } catch (e) {}
     </script>
     <script>
+      // iOS Safari увеличивает страницу при фокусе поля и не возвращает масштаб назад, даже при шрифте 16px
+      // (например, в textarea внутри нижнего листа над клавиатурой). Начиная с iOS 10 maximum-scale=1
+      // отключает только этот автозум, а pinch-zoom пользователя Safari всё равно разрешает.
+      // На Android и десктопе maximum-scale запрещает pinch-zoom, поэтому meta меняем только на iOS/iPadOS.
+      (function () {
+        var ua = navigator.userAgent || '';
+        var ios = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        if (!ios) return;
+        var meta = document.querySelector('meta[name="viewport"]');
+        if (meta && !/maximum-scale/.test(meta.content)) meta.content += ', maximum-scale=1';
+      })();
+    </script>
+    <script>
       // Загрузочная заглушка: бандл (и его i18n) здесь недоступен, поэтому строки лежат прямо в скрипте
       // (осознанное исключение из правила «без текста в коде»).
       (function () {

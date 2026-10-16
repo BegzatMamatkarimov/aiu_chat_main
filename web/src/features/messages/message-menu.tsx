@@ -3,9 +3,7 @@ import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 import type { ChatMessage } from '@/features/messages/message-model'
-import { touchDebug } from '@/features/messages/touch-debug'
 
-const { flags } = touchDebug
 
 const QUICK_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🙏'] as const
 /** Реакция двойного тапа. */
@@ -135,10 +133,6 @@ export function MessageMenu({ anchor, scroller, mine, via, myReactions, items, o
     setLayout(compute(anchor, scroller, mine, barRef.current, list))
   }, [anchor, scroller, mine])
 
-  useLayoutEffect(() => {
-    touchDebug.mark('commit')
-  }, [])
-
   const hasBar = myReactions !== null
   useLayoutEffect(() => {
     measure()
@@ -185,11 +179,10 @@ export function MessageMenu({ anchor, scroller, mine, via, myReactions, items, o
   const placed = layout !== null
   useEffect(() => {
     if (!placed) return
-    touchDebug.menuPlaced(scroller)
     const root = rootRef.current
     if (via === 'key') root?.querySelector<HTMLElement>('button')?.focus({ preventScroll: true })
     else root?.focus({ preventScroll: true })
-  }, [placed, via, scroller])
+  }, [placed, via])
 
   // Esc закрывает; при закрытии фокус возвращается на пузырь.
   useEffect(() => {
@@ -235,8 +228,7 @@ export function MessageMenu({ anchor, scroller, mine, via, myReactions, items, o
       ? { left: p.left, top: p.top, transformOrigin: `${p.ox}px ${p.oy}px` }
       : { left: 0, top: 0, visibility: 'hidden' }
 
-  const surface = cn(!flags.nosurface && 'glass-menu-surface', !flags.noanim && 'glass-menu-pop')
-  const flat: CSSProperties | undefined = flags.nosurface ? { background: 'var(--background)', border: '1px solid var(--glass-border)' } : undefined
+  const surface = cn('glass-menu-surface', 'glass-menu-pop')
 
   return createPortal(
     <div
@@ -253,11 +245,11 @@ export function MessageMenu({ anchor, scroller, mine, via, myReactions, items, o
       }}
       onKeyDown={onKeyDown}
     >
-      {dim && layout && !flags.noscrim && (
+      {dim && layout && (
         <div
           aria-hidden="true"
-          className={cn('glass-menu-scrim pointer-events-none fixed inset-0', !flags.noanim && 'glass-menu-fade')}
-          style={flags.noclip ? undefined : { clipPath: spotClip(layout.spot) }}
+          className={cn('glass-menu-scrim pointer-events-none fixed inset-0', 'glass-menu-fade')}
+          style={{ clipPath: spotClip(layout.spot) }}
         />
       )}
       {myReactions && (
@@ -265,8 +257,8 @@ export function MessageMenu({ anchor, scroller, mine, via, myReactions, items, o
           ref={barRef}
           role="group"
           aria-label={t('chat.msgMenu.reactions')}
-          className={cn('fixed flex gap-0.5 p-1.5', surface, !flags.nosurface && 'rounded-full')}
-          style={{ ...place(layout?.bar), ...flat }}
+          className={cn('fixed flex gap-0.5 p-1.5', surface, 'rounded-full')}
+          style={place(layout?.bar)}
         >
           {QUICK_REACTIONS.map((emoji) => (
             <button
@@ -285,9 +277,8 @@ export function MessageMenu({ anchor, scroller, mine, via, myReactions, items, o
         ref={listRef}
         role="menu"
         aria-label={t('chat.msgMenu.label')}
-        className={cn('fixed w-[min(14rem,calc(100vw-1rem))] overflow-hidden py-1', surface, !flags.nosurface && 'rounded-2xl')}
-        style={{ ...place(layout?.list), ...flat }}
-        onAnimationEnd={() => touchDebug.mark('done')}
+        className={cn('fixed w-[min(14rem,calc(100vw-1rem))] overflow-hidden py-1', surface, 'rounded-2xl')}
+        style={place(layout?.list)}
       >
         {items.map((item) => (
           <button
@@ -331,7 +322,6 @@ export function MessageMenuHost({ ref, messages, myId, buildItems, onReact }: Ho
     ref,
     () => ({
       open: (s) => {
-        touchDebug.mark('open')
         setMenu((cur) => (cur && cur.id === s.id ? cur : s))
       },
       close,

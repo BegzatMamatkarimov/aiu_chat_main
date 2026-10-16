@@ -1,6 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, type RefObject } from 'react'
 import { animate, type AnimationPlaybackControls } from 'motion/react'
-import { touchDebug } from '@/features/messages/touch-debug'
 
 const LONG_PRESS_MS = 350
 /** Через сколько мс удержания (палец на месте) пузырь начинает «вжиматься» — обратная связь до открытия меню. */
@@ -32,7 +31,7 @@ type Gesture = {
   timer: number | undefined
   pressTimer: number | undefined
   pressed: boolean
-  /** Время касания (как у события): точка отсчёта замеров ?debug=touch. */
+  /** Время касания (как у события): для распознавания двойного тапа. */
   t0: number
   /** Касание началось не на ссылке, цитате или чипе. */
   plain: boolean
@@ -47,8 +46,8 @@ type Options = {
   canReact: (id: string) => boolean
   onLongPress: (id: string, bubble: HTMLElement) => void
   onReply: (id: string) => void
-  /** Двойной тап / двойной клик по пузырю: быстрая реакция. t0 — начало второго касания. */
-  onDoubleTap: (id: string, bubble: HTMLElement, t0: number) => void
+  /** Двойной тап / двойной клик по пузырю: быстрая реакция. */
+  onDoubleTap: (id: string, bubble: HTMLElement) => void
 }
 
 const vibrate = (ms: number) => {
@@ -176,11 +175,10 @@ export function useMessageTouch(ref: RefObject<HTMLElement | null>, options: Opt
           next.mode = 'dead'
           suppressClick = true
           unpress(next, true)
-          touchDebug.fired(next.t0)
           vibrate(10)
           latest.current.onLongPress(msgId, bubble)
         }, LONG_PRESS_MS)
-        if (!latest.current.reduce && !touchDebug.flags.nopress) {
+        if (!latest.current.reduce) {
           // Плавное вжатие за оставшееся до порога время, только transform.
           next.pressTimer = window.setTimeout(() => {
             if (g !== next || next.mode !== 'pending') return
@@ -241,7 +239,7 @@ export function useMessageTouch(ref: RefObject<HTMLElement | null>, options: Opt
         lastTap = null
         if (tapped && cur.plain && latest.current.canReact(cur.msgId)) {
           if (prev && prev.id === cur.msgId && cur.t0 - prev.at <= DOUBLE_TAP_MS && Math.hypot(cur.x0 - prev.x, cur.y0 - prev.y) <= DOUBLE_TAP_DIST) {
-            latest.current.onDoubleTap(cur.msgId, cur.bubble, cur.t0)
+            latest.current.onDoubleTap(cur.msgId, cur.bubble)
           } else {
             lastTap = { id: cur.msgId, x: up.clientX, y: up.clientY, at: performance.now() }
           }
@@ -270,7 +268,7 @@ export function useMessageTouch(ref: RefObject<HTMLElement | null>, options: Opt
       const bubble = target?.closest<HTMLElement>('[data-bubble]')
       const id = bubble?.dataset.msgId
       if (!bubble || !id || !el.contains(bubble) || target?.closest(OWN_ACTION)) return
-      if (latest.current.canReact(id)) latest.current.onDoubleTap(id, bubble, e.timeStamp)
+      if (latest.current.canReact(id)) latest.current.onDoubleTap(id, bubble)
     }
     // Второй клик серии не выделяет слово.
     const onMouseDown = (e: MouseEvent) => {

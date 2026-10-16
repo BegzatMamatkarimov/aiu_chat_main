@@ -3,8 +3,10 @@
 -- Пользователи с другими e-mail не затрагиваются, но удаляются ЧУЖИЕ группы, где
 -- создатель или admin -- тестовый пользователь (вместе с сообщениями других людей).
 --
--- ВНИМАНИЕ: удаление из storage.objects убирает записи; сами файлы Supabase физически
--- удаляет позже фоновой задачей. Операция необратима.
+-- ВНИМАНИЕ: операция необратима. Файлы в Storage (фото, голосовые, аватарки) этим скриптом НЕ
+-- удаляются: Supabase запрещает прямой delete из storage.objects (защитный триггер).
+-- Они занимают немного места; при желании удалите их вручную: Dashboard -> Storage ->
+-- bucket chat-media (папки = id удалённых чатов) и avatars (папки = id удалённых пользователей).
 
 -- ===== 1. Предпросмотр (ничего не меняет) =====
 select id, email, created_at
@@ -58,20 +60,10 @@ create temp table _del_chats as
          and (dp.user_a in (select id from _del_users) or dp.user_b in (select id from _del_users))
      );
 
--- 2.1 Файлы чатов (ДО удаления чатов): первая папка пути -- chat_id.
-delete from storage.objects
-where bucket_id = 'chat-media'
-  and (storage.foldername(name))[1] in (select id::text from _del_chats);
-
--- 2.2 Аватарки (ДО удаления пользователей): первая папка пути -- user_id.
-delete from storage.objects
-where bucket_id = 'avatars'
-  and (storage.foldername(name))[1] in (select id::text from _del_users);
-
--- 2.3 Чаты: сообщения, вложения, реакции, участники и direct_pairs удаляются каскадом.
+-- 2.1 Чаты: сообщения, вложения, реакции, участники и direct_pairs удаляются каскадом.
 delete from public.chats where id in (select id from _del_chats);
 
--- 2.4 Пользователи: каскадом уходят profiles, chat_members, reactions, direct_pairs.
+-- 2.2 Пользователи: каскадом уходят profiles, chat_members, reactions, direct_pairs.
 -- Сообщения тестовых пользователей в чужих группах остаются с sender_id = null.
 delete from auth.users where id in (select id from _del_users);
 

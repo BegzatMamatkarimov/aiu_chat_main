@@ -10,7 +10,7 @@ const PRESS_SCALE = 0.96
 const DOUBLE_TAP_MS = 300
 const DOUBLE_TAP_DIST = 24
 /** Элементы внутри пузыря со своим действием: на них двойной тап не срабатывает. */
-const OWN_ACTION = 'a, button, [role="button"]'
+const OWN_ACTION = 'a, button, [role="button"], [role="slider"]'
 /** Сдвиг пальца, после которого долгое нажатие отменяется (это уже прокрутка или свайп). */
 const MOVE_CANCEL = 8
 const LOCK_DISTANCE = 10
@@ -147,6 +147,7 @@ export function useMessageTouch(ref: RefObject<HTMLElement | null>, options: Opt
       const target = e.target instanceof Element ? e.target : null
       const bubble = target?.closest<HTMLElement>('[data-bubble]')
       const row = bubble?.closest<HTMLElement>('[data-msg-row]')
+      if (target?.closest('[role="slider"]')) return
       const msgId = bubble?.dataset.msgId
       if (!bubble || !row || !msgId || !el.contains(bubble)) return
       // Новое касание во время пружины: фиксируем текущее положение, чтобы не дёргать.

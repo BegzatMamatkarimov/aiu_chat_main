@@ -7,6 +7,7 @@ import { hueOf } from '@/lib/hue'
 import { useCourseLabel } from '@/features/profile/course'
 import { initials } from '@/features/profile/initials'
 import { Linkified } from '@/features/messages/linkify'
+import { MessageVoice } from '@/features/messages/message-voice'
 import { MessagePhotos } from '@/features/messages/message-photos'
 import { PhotoViewer } from '@/features/messages/photo-viewer'
 import type { MenuVia } from '@/features/messages/message-menu'
@@ -215,7 +216,11 @@ export const MessageRow = memo(function MessageRow({ msg, mine, first, last, gro
                 </div>
               )}
 
-              {others.map((a) => {
+              {msg.attachments.filter((a) => a.kind === 'audio').map((a) => (
+                !msg.deleted && <MessageVoice key={a.id} att={a} msgId={msg.id} sent={msg.status === 'sent'} />
+              ))}
+
+              {others.filter((a) => a.kind !== 'audio').map((a) => {
                 const Icon = KIND_ICON[a.kind]
                 return (
                   <div key={a.id} className="mb-1 mt-0.5 flex items-center gap-2 rounded-lg bg-current/10 px-2.5 py-1.5 text-sm">

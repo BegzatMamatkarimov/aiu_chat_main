@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ClipboardEvent, type KeyboardEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ArrowUp, CornerUpLeft, ImagePlus, LoaderCircle, X } from 'lucide-react'
+import { ArrowUp, CornerUpLeft, ImagePlus, LoaderCircle, Mic, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/features/auth/use-auth'
@@ -8,6 +8,8 @@ import { getDraft, setDraft } from '@/features/messages/drafts'
 import { clearReply, getReplyTarget, registerComposer, useReplyTarget } from '@/features/messages/reply-store'
 import { MediaError, MAX_PHOTOS, prepareImage } from '@/features/messages/image-compress'
 import { MAX_BODY, useSendMessage, type DraftPhoto } from '@/features/messages/send-message'
+import { useVoiceRecorder } from '@/features/messages/use-voice-recorder'
+import { RecordingBar } from '@/features/messages/recording-bar'
 
 /** 6 строк по 24px (leading-6). */
 const MAX_HEIGHT = 144
@@ -17,7 +19,9 @@ export function Composer({ chatId }: { chatId: string }) {
   const { t } = useTranslation()
   const { user } = useAuth()
   const uid = user?.id ?? ''
-  const { send } = useSendMessage(chatId)
+  const { send, sendVoice } = useSendMessage(chatId)
+  const voice = useVoiceRecorder()
+  const voiceBusy = voice.state !== 'idle'
   const [text, setText] = useState(() => getDraft(uid, chatId))
   const area = useRef<HTMLTextAreaElement>(null)
   const reply = useReplyTarget(chatId)
@@ -29,6 +33,7 @@ export function Composer({ chatId }: { chatId: string }) {
   const queued = useRef(0)
 
   const canSend = (text.trim().length > 0 || photos.length > 0) && processing === 0 && text.length <= MAX_BODY
+  const showMic = text.trim().length === 0 && photos.length === 0 && processing === 0
   const remaining = MAX_BODY - text.length
 
   useLayoutEffect(() => {
@@ -101,6 +106,12 @@ export function Composer({ chatId }: { chatId: string }) {
     area.current?.focus({ preventScroll: true })
   }
 
+  const submitVoice = async () => {
+    const clip = await voice.finish()
+    if (!clip) return
+    if (sendVoice(clip, getReplyTarget(chatId))) clearReply(chatId)
+  }
+
   const onKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key !== 'Enter' || e.shiftKey || e.nativeEvent.isComposing) return
     // Enter отправляет только на устройствах с мышью/клавиатурой; на сенсорных — перенос строки.
@@ -160,7 +171,10 @@ export function Composer({ chatId }: { chatId: string }) {
             )}
           </div>
         )}
-        <div className="flex items-end gap-1.5">
+        {voiceBusy && (
+          <RecordingBar recording={voice.state === 'recording'} elapsed={voice.elapsed} level={voice.level} onCancel={voice.cancel} onSend={() => void submitVoice()} />
+        )}
+        <div className={cn('items-end gap-1.5', voiceBusy ? 'hidden' : 'flex')}>
           <input
             ref={fileInput}
             type="file"
@@ -205,6 +219,17 @@ export function Composer({ chatId }: { chatId: string }) {
               {remaining}
             </span>
           )}
+          {showMic ? (
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => void voice.start()}
+              aria-label={t('chat.voice.record')}
+              className="glass-press flex size-11 shrink-0 items-center justify-center rounded-full text-muted-foreground"
+            >
+              <Mic className="size-5" />
+            </button>
+          ) : (
           <button
             type="button"
             disabled={!canSend}
@@ -220,6 +245,7 @@ export function Composer({ chatId }: { chatId: string }) {
             />
             <ArrowUp className={cn('relative size-5 transition-colors duration-200 motion-reduce:transition-none', canSend && 'text-[color:var(--out-fg)]')} />
           </button>
+          )}
         </div>
       </div>
     </div>

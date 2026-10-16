@@ -287,6 +287,20 @@
       "next": "Next photo",
       "download": "Download",
       "counter": "{{current}} / {{total}}"
+    },
+    "voice": {
+      "record": "Record voice message",
+      "cancel": "Cancel recording",
+      "recording": "Recording",
+      "noAccess": "No microphone access",
+      "unsupported": "Recording is not supported in this browser",
+      "maxReached": "1 minute maximum",
+      "tooShort": "Too short",
+      "play": "Play",
+      "pause": "Pause",
+      "seek": "Seek",
+      "retry": "Retry",
+      "playError": "Could not play"
     }
   },
   "join": {

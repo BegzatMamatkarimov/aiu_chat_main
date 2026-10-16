@@ -14,13 +14,15 @@ export const MAX_BODY = 4000
 const UPLOAD_PARALLEL = 3
 
 export type DraftPhoto = PreparedImage & { id: string; url: string }
+export type UploadFile = { blob: Blob; mime: string }
+export type VoiceClip = { blob: Blob; mime: string; ext: string; durationMs: number }
 
 const inflight = new Set<string>()
 /** Файлы неотправленных сообщений (для повтора) и уже залитые объекты. */
-const blobs = new Map<string, Map<string, PreparedImage>>()
+const blobs = new Map<string, Map<string, UploadFile>>()
 const uploaded = new Set<string>()
 
-async function uploadOne(path: string, f: PreparedImage) {
+async function uploadOne(path: string, f: UploadFile) {
   if (uploaded.has(path)) return true
   try {
     const { error } = await supabase.storage.from(MEDIA_BUCKET).upload(path, f.blob, { contentType: f.mime, upsert: false })
@@ -35,7 +37,7 @@ async function uploadOne(path: string, f: PreparedImage) {
   return false
 }
 
-async function uploadAll(files: Map<string, PreparedImage>) {
+async function uploadAll(files: Map<string, UploadFile>) {
   const todo = [...files]
   let i = 0
   let ok = true
@@ -97,6 +99,7 @@ async function deliver(qc: QueryClient, msg: ChatMessage, myId: string, myName: 
         size_bytes: a.sizeBytes,
         width: a.width,
         height: a.height,
+        duration_ms: a.durationMs,
       })),
     })
     if (!error) saved = parseMessage(data, myId)
@@ -134,7 +137,7 @@ export function useSendMessage(chatId: string) {
       const body = text.trim()
       if (!myId || (!body && photos.length === 0) || body.length > MAX_BODY) return false
       const id = crypto.randomUUID()
-      const files = new Map<string, PreparedImage>()
+      const files = new Map<string, UploadFile>()
       const attachments = photos.map((p): MessageAttachment => {
         const path = `${chatId}/${id}/${crypto.randomUUID()}.${extOf(p.mime)}`
         files.set(path, p)
@@ -163,6 +166,35 @@ export function useSendMessage(chatId: string) {
     [qc, chatId, myId, name, author],
   )
 
+  const sendVoice = useCallback(
+    (clip: VoiceClip, reply: ReplyPreview | null = null) => {
+      if (!myId) return false
+      const id = crypto.randomUUID()
+      const path = `${chatId}/${id}/${crypto.randomUUID()}.${clip.ext}`
+      blobs.set(id, new Map([[path, clip]]))
+      const url = URL.createObjectURL(clip.blob)
+      setPreview(path, url)
+      const msg: ChatMessage = {
+        id,
+        chatId,
+        senderId: myId,
+        author,
+        body: null,
+        createdAt: new Date().toISOString(),
+        deleted: false,
+        replyTo: reply?.id ?? null,
+        reply,
+        attachments: [{ id: path, kind: 'audio', mime: clip.mime, sizeBytes: clip.blob.size, storagePath: path, width: null, height: null, durationMs: clip.durationMs }],
+        reactions: [],
+        status: 'sending',
+      }
+      addPending(msg)
+      void deliver(qc, msg, myId, name)
+      return true
+    },
+    [qc, chatId, myId, name, author],
+  )
+
   const retry = useCallback(
     (id: string) => {
       const msg = getPendingMessage(chatId, id)
@@ -181,5 +213,5 @@ export function useSendMessage(chatId: string) {
     [chatId],
   )
 
-  return { send, retry, discard }
+  return { send, sendVoice, retry, discard }
 }

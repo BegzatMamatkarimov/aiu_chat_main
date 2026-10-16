@@ -347,5 +347,18 @@
       "saved": "Group updated",
       "error": "Couldn’t save. Please try again"
     }
+  },
+  "avatar": {
+    "title": "Photo",
+    "hint": "Drag the photo and set the zoom",
+    "zoom": "Zoom",
+    "done": "Done",
+    "cancel": "Cancel",
+    "change": "Change photo",
+    "remove": "Remove photo",
+    "updated": "Photo updated",
+    "uploadError": "Could not upload the photo",
+    "unsupported": "Format not supported",
+    "tooLarge": "File is too large (15 MB max)"
   }
 }

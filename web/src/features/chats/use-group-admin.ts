@@ -101,10 +101,10 @@ function useRefreshGroup(chatId: string) {
 export function useUpdateGroup(chatId: string) {
   const refresh = useRefreshGroup(chatId)
   return useMutation({
-    mutationFn: async (v: { name: string; description: string; isPublic: boolean }) => {
+    mutationFn: async (v: { name: string; description: string; isPublic: boolean; avatarUrl?: string | null }) => {
       const { data, error } = await supabase
         .from('chats')
-        .update({ name: v.name, description: v.description || null, is_public: v.isPublic })
+        .update({ name: v.name, description: v.description || null, is_public: v.isPublic, ...(v.avatarUrl !== undefined && { avatar_url: v.avatarUrl }) })
         .eq('id', chatId)
         .select('id')
       if (error) throw error

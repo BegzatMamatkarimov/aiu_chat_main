@@ -31,6 +31,7 @@ export function MessageVoice({ att, msgId, sent }: { att: MessageAttachment; msg
   const preview = getPreview(att.storagePath)
   const signed = useSignedUrl(att.storagePath, sent && !preview)
   const src = preview ?? signed.data
+  const waitFailed = waiting && !src && signed.isError && !signed.isFetching
 
   const audio = useRef<HTMLAudioElement | null>(null)
   const seekTo = useRef<number | null>(null)
@@ -134,8 +135,8 @@ export function MessageVoice({ att, msgId, sent }: { att: MessageAttachment; msg
   }
 
   useEffect(() => {
-    if (waiting && !src && signed.isError) fail()
-  }, [waiting, src, signed.isError, fail])
+    if (waitFailed) toast.error(t('chat.voice.playError'))
+  }, [waitFailed, t])
 
   useEffect(() => {
     const me = self.current
@@ -171,17 +172,19 @@ export function MessageVoice({ att, msgId, sent }: { att: MessageAttachment; msg
     e.preventDefault()
   }
 
-  const Icon = !sent || loading || (waiting && !src) ? LoaderCircle : error ? RotateCcw : playing ? Pause : Play
+  const showError = error || waitFailed
+  const busy = !sent || loading || (waiting && !src && !waitFailed)
+  const Icon = busy ? LoaderCircle : showError ? RotateCcw : playing ? Pause : Play
   return (
     <div className="flex w-[min(240px,62vw)] items-center gap-2.5 py-0.5 md:w-60">
       <button
         type="button"
         onClick={toggle}
         disabled={!sent}
-        aria-label={error ? t('chat.voice.retry') : playing ? t('chat.voice.pause') : t('chat.voice.play')}
+        aria-label={showError ? t('chat.voice.retry') : playing ? t('chat.voice.pause') : t('chat.voice.play')}
         className="glass-voice-btn glass-press flex size-10 shrink-0 items-center justify-center rounded-full"
       >
-        <Icon aria-hidden="true" className={`size-5 ${!sent || loading || (waiting && !src) ? 'animate-spin motion-reduce:animate-none' : ''}`} fill={Icon === Play || Icon === Pause ? 'currentColor' : 'none'} />
+        <Icon aria-hidden="true" className={`size-5 ${busy ? 'animate-spin motion-reduce:animate-none' : ''}`} fill={Icon === Play || Icon === Pause ? 'currentColor' : 'none'} />
       </button>
       <div className="min-w-0 flex-1">
         <div

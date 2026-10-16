@@ -32,7 +32,7 @@ export function ChatAvatar({
       }
     >
       {image ? (
-        <img src={image} alt="" draggable={false} onError={() => setFailed(image)} className="size-full rounded-full object-cover" />
+        <img src={image} alt="" loading="lazy" referrerPolicy="no-referrer" draggable={false} onError={() => setFailed(image)} className="size-full rounded-full object-cover" />
       ) : (
         label
       )}

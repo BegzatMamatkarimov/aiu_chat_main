@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { ChevronLeft, LogOut } from 'lucide-react'
 import { useAuth } from '@/features/auth/use-auth'
 import { useCourseLabel } from '@/features/profile/course'
-import { initials } from '@/features/profile/initials'
+import { ProfileAvatarEditor } from '@/features/profile/profile-avatar-editor'
 import { ProfileForm } from '@/features/profile/profile-form'
 import { Button } from '@/components/ui/button'
 import { CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -42,22 +42,8 @@ export function SettingsPage() {
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
           {profile && (
-            <div className="flex items-center gap-4">
-              {profile.avatar_url ? (
-                <img
-                  src={profile.avatar_url}
-                  alt=""
-                  referrerPolicy="no-referrer"
-                  className="size-16 shrink-0 rounded-full object-cover"
-                />
-              ) : (
-                <div
-                  aria-hidden="true"
-                  className="flex size-16 shrink-0 items-center justify-center rounded-full bg-primary text-xl font-semibold text-primary-foreground"
-                >
-                  {initials(profile.display_name)}
-                </div>
-              )}
+            <div className="flex flex-col gap-4">
+              <ProfileAvatarEditor />
               <div className="min-w-0">
                 <p className="truncate font-semibold">{profile.display_name}</p>
                 {profile.username && (

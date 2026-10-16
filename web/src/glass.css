@@ -476,6 +476,11 @@ button, [role="tab"] {
 
 /* Телефон: blur у плавающих элементов ленты и меню дорог для WebKit (iOS), поэтому сплошной фон без backdrop-filter и одна мягкая тень. Шапки не трогаем. */
 @media (pointer: coarse) {
+  /* WebKit на iOS: анимация появления меню блокировала кадр ~3 с */
+  .glass-menu-pop,
+  .glass-menu-fade {
+    animation: none;
+  }
   .glass-menu-surface {
     --glass-panel-bg: color-mix(in oklab, var(--background) 100%, transparent);
     box-shadow: 0 8px 24px -8px var(--glass-shadow);

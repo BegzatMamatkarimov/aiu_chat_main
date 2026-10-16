@@ -10,6 +10,7 @@ const PLURAL_RE = new RegExp(`_(${PLURAL_SUFFIXES.join('|')})$`)
 // kk/en могут совпадать с ru: бренд, названия языков (на своём языке), идентификатор username, общие заимствования.
 const SAME_AS_RU = new Set([
   'app.name',
+  'chat.media.counter',
   'language.kk',
   'language.ru',
   'language.en',

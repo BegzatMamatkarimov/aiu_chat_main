@@ -4,6 +4,11 @@
   /* Орнамент «қошқар мүйіз» (маски): --orn-bg — тайл для фона */
   --orn-bg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cg%3E%3Cpath d='M24 23C24 16 19.5 12 14 12C9 12 5.5 15.5 7 19C8.2 21.7 11.8 21.6 12.6 19.3C13.2 17.5 11.4 16.3 10 17.2'/%3E%3Cpath d='M24 23C24 16 28.5 12 34 12C39 12 42.5 15.5 41 19C39.8 21.7 36.2 21.6 35.4 19.3C34.8 17.5 36.6 16.3 38 17.2'/%3E%3Cpath d='M24 2.5L27 6.2L24 9.9L21 6.2Z'/%3E%3Cpath d='M24 10.5V23'/%3E%3C/g%3E%3Cg transform='translate(24 24)'%3E%3Cpath d='M24 23C24 16 19.5 12 14 12C9 12 5.5 15.5 7 19C8.2 21.7 11.8 21.6 12.6 19.3C13.2 17.5 11.4 16.3 10 17.2'/%3E%3Cpath d='M24 23C24 16 28.5 12 34 12C39 12 42.5 15.5 41 19C39.8 21.7 36.2 21.6 35.4 19.3C34.8 17.5 36.6 16.3 38 17.2'/%3E%3Cpath d='M24 2.5L27 6.2L24 9.9L21 6.2Z'/%3E%3Cpath d='M24 10.5V23'/%3E%3C/g%3E%3Cg transform='translate(-24 24)'%3E%3Cpath d='M24 23C24 16 19.5 12 14 12C9 12 5.5 15.5 7 19C8.2 21.7 11.8 21.6 12.6 19.3C13.2 17.5 11.4 16.3 10 17.2'/%3E%3Cpath d='M24 23C24 16 28.5 12 34 12C39 12 42.5 15.5 41 19C39.8 21.7 36.2 21.6 35.4 19.3C34.8 17.5 36.6 16.3 38 17.2'/%3E%3Cpath d='M24 2.5L27 6.2L24 9.9L21 6.2Z'/%3E%3Cpath d='M24 10.5V23'/%3E%3C/g%3E%3C/svg%3E");
 
+  --viewer-bg: #000;
+  --viewer-fg: #fff;
+  --viewer-btn: rgb(255 255 255 / 16%);
+  --photo-bg: #e4e2ef;
+  --photo-scrim: rgb(0 0 0 / 40%);
   --menu-scrim: rgb(20 16 48 / 32%);
   --flash: rgb(255 196 61 / 55%);
 
@@ -85,6 +90,7 @@
 }
 
 .dark {
+  --photo-bg: #2b2a3d;
   --menu-scrim: rgb(0 0 0 / 50%);
   --flash: rgb(255 196 61 / 40%);
   --out-a: color-mix(in oklab, var(--primary) 70%, black);
@@ -552,3 +558,17 @@ button, [role="tab"] {
 @media (prefers-reduced-motion: reduce) {
   .glass-reply-in { animation: none; }
 }
+
+/* Фото в сообщениях и полноэкранный просмотр. Просмотр появляется без анимации и без blur. */
+.glass-photo { background: var(--photo-bg); }
+.glass-photo-scrim { background: var(--photo-scrim); color: var(--viewer-fg); }
+.glass-bubble .glass-time.glass-time-over {
+  background: var(--photo-scrim);
+  color: var(--viewer-fg);
+  border-radius: 9999px;
+  padding: 0.25rem 0.4rem;
+}
+.glass-viewer { background: var(--viewer-bg); color: var(--viewer-fg); }
+.glass-viewer-btn { background: var(--viewer-btn); color: var(--viewer-fg); }
+.glass-viewer-track { scrollbar-width: none; overscroll-behavior: contain; }
+.glass-viewer-track::-webkit-scrollbar { display: none; }

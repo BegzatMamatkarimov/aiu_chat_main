@@ -1,16 +1,54 @@
 import { useCallback, useMemo } from 'react'
 import { useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
+import { extOf, type PreparedImage } from '@/features/messages/image-compress'
+import { MEDIA_BUCKET, releasePreview, setPreview } from '@/features/messages/media-url'
 import { useAuth } from '@/features/auth/use-auth'
 import type { ChatSummary } from '@/features/chats/chat-model'
 import { MY_CHATS_KEY } from '@/features/chats/use-my-chats'
-import { parseMessage, type ChatMessage, type MessageAuthor, type ReplyPreview } from '@/features/messages/message-model'
+import { parseMessage, type ChatMessage, type MessageAttachment, type MessageAuthor, type ReplyPreview } from '@/features/messages/message-model'
 import { addPending, getPendingMessage, patchPending, removePending } from '@/features/messages/pending-messages'
 import { messagesKey, upsertMessage } from '@/features/messages/use-chat-messages'
 
 export const MAX_BODY = 4000
+const UPLOAD_PARALLEL = 3
+
+export type DraftPhoto = PreparedImage & { id: string; url: string }
 
 const inflight = new Set<string>()
+/** Файлы неотправленных сообщений (для повтора) и уже залитые объекты. */
+const blobs = new Map<string, Map<string, PreparedImage>>()
+const uploaded = new Set<string>()
+
+async function uploadOne(path: string, f: PreparedImage) {
+  if (uploaded.has(path)) return true
+  try {
+    const { error } = await supabase.storage.from(MEDIA_BUCKET).upload(path, f.blob, { contentType: f.mime, upsert: false })
+    const exists = error && (String((error as { statusCode?: string }).statusCode) === '409' || /already exists/i.test(error.message))
+    if (!error || exists) {
+      uploaded.add(path)
+      return true
+    }
+  } catch {
+    // сеть оборвалась
+  }
+  return false
+}
+
+async function uploadAll(files: Map<string, PreparedImage>) {
+  const todo = [...files]
+  let i = 0
+  let ok = true
+  await Promise.all(
+    Array.from({ length: Math.min(UPLOAD_PARALLEL, todo.length) }, async () => {
+      while (ok && i < todo.length) {
+        const [path, f] = todo[i++]
+        if (!(await uploadOne(path, f))) ok = false
+      }
+    }),
+  )
+  return ok
+}
 
 /** Последнее сообщение и порядок в списке чатов — сразу по ответу сервера, затем сверяемся с сервером. */
 function touchChatList(qc: QueryClient, msg: ChatMessage, myId: string, myName: string | null) {
@@ -28,7 +66,7 @@ function touchChatList(qc: QueryClient, msg: ChatMessage, myId: string, myName: 
               deleted: false,
               senderId: myId,
               senderName: myName,
-              attachmentKind: null,
+              attachmentKind: msg.attachments[0]?.kind ?? null,
             },
           }
         : c,
@@ -45,12 +83,21 @@ async function deliver(qc: QueryClient, msg: ChatMessage, myId: string, myName: 
   patchPending(msg.chatId, msg.id, { status: 'sending' })
   let saved: ChatMessage | null = null
   try {
+    const files = blobs.get(msg.id)
+    if (files && !(await uploadAll(files))) throw new Error('upload')
     const { data, error } = await supabase.rpc('send_message', {
       p_id: msg.id,
       p_chat_id: msg.chatId,
       p_body: msg.body,
       p_reply_to: msg.replyTo,
-      p_attachments: [],
+      p_attachments: msg.attachments.map((a) => ({
+        kind: a.kind,
+        storage_path: a.storagePath,
+        mime: a.mime,
+        size_bytes: a.sizeBytes,
+        width: a.width,
+        height: a.height,
+      })),
     })
     if (!error) saved = parseMessage(data, myId)
   } catch {
@@ -61,6 +108,8 @@ async function deliver(qc: QueryClient, msg: ChatMessage, myId: string, myName: 
     patchPending(msg.chatId, msg.id, { status: 'failed' })
     return
   }
+  blobs.delete(msg.id)
+  for (const a of msg.attachments) uploaded.delete(a.storagePath)
   // Серверная версия остаётся в pending, пока не окажется в кэше ленты (его снимает useChatMessages): без мигания и без дублей.
   patchPending(msg.chatId, msg.id, saved)
   if (qc.getQueryData(messagesKey(msg.chatId))) upsertMessage(qc, saved)
@@ -81,20 +130,29 @@ export function useSendMessage(chatId: string) {
   )
 
   const send = useCallback(
-    (text: string, reply: ReplyPreview | null = null) => {
+    (text: string, reply: ReplyPreview | null = null, photos: readonly DraftPhoto[] = []) => {
       const body = text.trim()
-      if (!myId || !body || body.length > MAX_BODY) return false
+      if (!myId || (!body && photos.length === 0) || body.length > MAX_BODY) return false
+      const id = crypto.randomUUID()
+      const files = new Map<string, PreparedImage>()
+      const attachments = photos.map((p): MessageAttachment => {
+        const path = `${chatId}/${id}/${crypto.randomUUID()}.${extOf(p.mime)}`
+        files.set(path, p)
+        setPreview(path, p.url)
+        return { id: path, kind: 'image', mime: p.mime, sizeBytes: p.size, storagePath: path, width: p.width, height: p.height, durationMs: null }
+      })
+      if (files.size) blobs.set(id, files)
       const msg: ChatMessage = {
-        id: crypto.randomUUID(),
+        id,
         chatId,
         senderId: myId,
         author,
-        body,
+        body: body || null,
         createdAt: new Date().toISOString(),
         deleted: false,
         replyTo: reply?.id ?? null,
         reply,
-        attachments: [],
+        attachments,
         reactions: [],
         status: 'sending',
       }
@@ -115,7 +173,10 @@ export function useSendMessage(chatId: string) {
 
   const discard = useCallback(
     (id: string) => {
-      if (!inflight.has(id)) removePending(chatId, id)
+      if (inflight.has(id)) return
+      for (const a of getPendingMessage(chatId, id)?.attachments ?? []) releasePreview(a.storagePath)
+      blobs.delete(id)
+      removePending(chatId, id)
     },
     [chatId],
   )

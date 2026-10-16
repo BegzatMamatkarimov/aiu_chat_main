@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type MouseEvent } from 'react'
+import { memo, useCallback, useEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type MouseEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Check, CircleAlert, Clock, CornerUpLeft, Ellipsis, File as FileIcon, Image as ImageIcon, Mic, Video } from 'lucide-react'
 import { ChatAvatar } from '@/components/glass/chat-avatar'
@@ -7,6 +7,8 @@ import { hueOf } from '@/lib/hue'
 import { useCourseLabel } from '@/features/profile/course'
 import { initials } from '@/features/profile/initials'
 import { Linkified } from '@/features/messages/linkify'
+import { MessagePhotos } from '@/features/messages/message-photos'
+import { PhotoViewer } from '@/features/messages/photo-viewer'
 import type { MenuVia } from '@/features/messages/message-menu'
 import { authorLabel, formatMessageTime, type AttachmentKind, type ChatMessage, type MessageReaction } from '@/features/messages/message-model'
 
@@ -95,6 +97,11 @@ export const MessageRow = memo(function MessageRow({ msg, mine, first, last, gro
   const hueKey = msg.senderId ?? msg.id
   const showAuthor = group && !mine
   const failed = msg.status === 'failed'
+  const images = msg.attachments.filter((a) => a.kind === 'image')
+  const others = msg.attachments.filter((a) => a.kind !== 'image')
+  const photoOnly = images.length > 0 && !msg.body && !msg.deleted
+  const [viewerAt, setViewerAt] = useState<number | null>(null)
+  const closeViewer = useCallback(() => setViewerAt(null), [])
 
   const radius = mine
     ? cn(!first && 'rounded-tr-[6px]', last ? 'rounded-br-none' : 'rounded-br-[6px]')
@@ -163,13 +170,14 @@ export const MessageRow = memo(function MessageRow({ msg, mine, first, last, gro
               onContextMenu={onContextMenu}
               onKeyDown={onKeyDown}
               className={cn(
-                'glass-bubble min-w-0 rounded-2xl px-3 py-1.5 outline-none focus-visible:ring-3 focus-visible:ring-ring/60',
+                'glass-bubble min-w-0 rounded-2xl outline-none focus-visible:ring-3 focus-visible:ring-ring/60',
+                photoOnly ? 'p-1' : 'px-3 py-1.5',
                 mine ? 'glass-bubble-out' : 'glass-bubble-in',
                 radius,
               )}
             >
               {first && showAuthor && (
-                <div className="mb-0.5 flex min-w-0 items-baseline gap-1.5" style={{ '--h': hueOf(hueKey) } as CSSProperties}>
+                <div className={cn('mb-0.5 flex min-w-0 items-baseline gap-1.5', photoOnly && 'px-2 pt-0.5')} style={{ '--h': hueOf(hueKey) } as CSSProperties}>
                   <span className="glass-name truncate text-[0.8125rem] font-semibold">{authorName}</span>
                   {courseLabel(msg.author?.course) && (
                     <span className="shrink-0 text-[0.6875rem] font-medium text-muted-foreground">{courseLabel(msg.author?.course)}</span>
@@ -190,7 +198,7 @@ export const MessageRow = memo(function MessageRow({ msg, mine, first, last, gro
                       onJump(msg.reply.id)
                     }
                   }}
-                  className="glass-quote glass-press mb-1 mt-0.5 min-w-0 cursor-pointer rounded-md py-1 pl-2 pr-2 outline-none focus-visible:ring-2 focus-visible:ring-ring/60"
+                  className={cn('glass-quote glass-press mb-1 mt-0.5 min-w-0 cursor-pointer rounded-md py-1 pl-2 pr-2 outline-none focus-visible:ring-2 focus-visible:ring-ring/60', photoOnly && 'mx-1')}
                 >
                   <span className="glass-quote-name block truncate text-[0.8125rem] font-semibold leading-tight">
                     {msg.reply.authorName || t('chat.feed.unknownAuthor')}
@@ -201,7 +209,13 @@ export const MessageRow = memo(function MessageRow({ msg, mine, first, last, gro
                 </div>
               )}
 
-              {msg.attachments.map((a) => {
+              {images.length > 0 && !msg.deleted && (
+                <div className={cn('mt-0.5', !photoOnly && msg.body && 'mb-1')}>
+                  <MessagePhotos msg={msg} onOpen={setViewerAt} />
+                </div>
+              )}
+
+              {others.map((a) => {
                 const Icon = KIND_ICON[a.kind]
                 return (
                   <div key={a.id} className="mb-1 mt-0.5 flex items-center gap-2 rounded-lg bg-current/10 px-2.5 py-1.5 text-sm">
@@ -221,11 +235,16 @@ export const MessageRow = memo(function MessageRow({ msg, mine, first, last, gro
                   <Linkified text={msg.body} />
                   <span className="inline-block" style={{ width: mine ? '4.4rem' : '2.9rem' }} aria-hidden="true" />
                 </p>
-              ) : (
+              ) : photoOnly ? null : (
                 <div className="h-4" aria-hidden="true" />
               )}
 
-              <span className="glass-time absolute bottom-1 right-2.5 flex items-center gap-1 text-[0.6875rem] tabular-nums leading-none">
+              <span
+                className={cn(
+                  'glass-time absolute flex items-center gap-1 text-[0.6875rem] tabular-nums leading-none',
+                  photoOnly ? 'glass-time-over bottom-2 right-2.5' : 'bottom-1 right-2.5',
+                )}
+              >
                 {formatMessageTime(msg.createdAt, lang)}
                 {mine && !failed && (
                   <>
@@ -252,6 +271,7 @@ export const MessageRow = memo(function MessageRow({ msg, mine, first, last, gro
             )}
           </div>
         </div>
+        {viewerAt !== null && <PhotoViewer paths={images.map((i) => i.storagePath)} start={viewerAt} onClose={closeViewer} />}
 
         <div className={cn('flex max-w-[86%] flex-col md:max-w-[72%]', mine ? 'items-end' : 'items-start', showAuthor && 'pl-10')}>
           {msg.reactions.length > 0 && (

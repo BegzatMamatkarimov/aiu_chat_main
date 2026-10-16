@@ -240,7 +240,10 @@
     "composer": {
       "placeholder": "Message",
       "send": "Send",
-      "remaining": "Characters left: {{count}}"
+      "remaining": "Characters left: {{count}}",
+      "attach": "Attach photo",
+      "removePhoto": "Remove photo",
+      "processing": "Processing photo…"
     },
     "status": {
       "sending": "Sending",
@@ -271,6 +274,19 @@
     "reply": {
       "cancel": "Cancel reply",
       "jump": "Go to the original message"
+    },
+    "media": {
+      "tooMany": "You can attach up to {{count}} photos",
+      "unsupported": "Format not supported",
+      "tooLarge": "File is larger than 10 MB",
+      "loadError": "Could not load the photo. Tap to retry",
+      "open": "Open photo",
+      "viewer": "Photo viewer",
+      "close": "Close",
+      "prev": "Previous photo",
+      "next": "Next photo",
+      "download": "Download",
+      "counter": "{{current}} / {{total}}"
     }
   },
   "join": {

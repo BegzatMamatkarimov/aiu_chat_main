@@ -24,16 +24,15 @@ export function MessageVoice({ att, msgId, sent }: { att: MessageAttachment; msg
   const total = att.durationMs ?? 0
   const heights = useMemo(() => barHeights(msgId), [msgId])
 
-  const [wanted, setWanted] = useState(false)
+  const [waiting, setWaiting] = useState(false)
   const [playing, setPlaying] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
   const preview = getPreview(att.storagePath)
-  const signed = useSignedUrl(att.storagePath, wanted && sent && !preview)
+  const signed = useSignedUrl(att.storagePath, sent && !preview)
   const src = preview ?? signed.data
 
   const audio = useRef<HTMLAudioElement | null>(null)
-  const want = useRef(false)
   const seekTo = useRef<number | null>(null)
   const raf = useRef(0)
   const fill = useRef<HTMLDivElement>(null)
@@ -64,7 +63,7 @@ export function MessageVoice({ att, msgId, sent }: { att: MessageAttachment; msg
 
   const fail = useCallback(() => {
     audio.current = null
-    want.current = false
+    setWaiting(false)
     setLoading(false)
     setPlaying(false)
     setError(true)
@@ -73,30 +72,30 @@ export function MessageVoice({ att, msgId, sent }: { att: MessageAttachment; msg
 
   const playFail = useCallback(
     (e: unknown) => {
-      if (!(e instanceof DOMException && e.name === 'AbortError')) fail()
+      if (!(e instanceof DOMException)) return fail()
+      if (e.name === 'AbortError') return
+      if (e.name === 'NotAllowedError') {
+        setLoading(false)
+        setPlaying(false)
+        return
+      }
+      fail()
     },
     [fail],
   )
 
-  const begin = useCallback(
-    (url: string) => {
-      const a = audio.current
-      if (!a) return
-      a.src = url
-      if (seekTo.current !== null) {
-        const at = seekTo.current
-        a.addEventListener('loadedmetadata', () => (a.currentTime = at), { once: true })
-        seekTo.current = null
-      }
-      a.play().catch(playFail)
-    },
-    [playFail],
-  )
-
+  // Всё внутри обработчика тапа синхронно: iOS Safari разрешает play() только в рамках жеста.
   const toggle = () => {
     if (!sent) return
     const a = audio.current
     if (a && !a.paused) return a.pause()
+    if (!a && !src) {
+      // Ссылка ещё не готова: показываем спиннер, play() после её прихода не вызываем — нужен повторный тап.
+      setError(false)
+      setWaiting(true)
+      if (signed.isError) void signed.refetch()
+      return
+    }
     setError(false)
     current?.pause()
     current = self.current
@@ -124,20 +123,19 @@ export function MessageVoice({ att, msgId, sent }: { att: MessageAttachment; msg
     }
     el.onerror = fail
     audio.current = el
-    want.current = true
+    el.src = src as string
+    if (seekTo.current !== null) {
+      const at = seekTo.current
+      el.addEventListener('loadedmetadata', () => (el.currentTime = at), { once: true })
+      seekTo.current = null
+    }
     setLoading(true)
-    setWanted(true)
-    if (src) begin(src)
-    else if (signed.isError) void signed.refetch()
+    el.play().catch(playFail)
   }
 
-  // Ссылка пришла после тапа (подписанный URL) — запускаем.
   useEffect(() => {
-    if (want.current && audio.current && !audio.current.src && src) begin(src)
-  }, [src, begin])
-  useEffect(() => {
-    if (wanted && signed.isError && want.current) fail()
-  }, [wanted, signed.isError, fail])
+    if (waiting && !src && signed.isError) fail()
+  }, [waiting, src, signed.isError, fail])
 
   useEffect(() => {
     const me = self.current
@@ -173,7 +171,7 @@ export function MessageVoice({ att, msgId, sent }: { att: MessageAttachment; msg
     e.preventDefault()
   }
 
-  const Icon = !sent || loading ? LoaderCircle : error ? RotateCcw : playing ? Pause : Play
+  const Icon = !sent || loading || (waiting && !src) ? LoaderCircle : error ? RotateCcw : playing ? Pause : Play
   return (
     <div className="flex w-[min(240px,62vw)] items-center gap-2.5 py-0.5 md:w-60">
       <button
@@ -183,7 +181,7 @@ export function MessageVoice({ att, msgId, sent }: { att: MessageAttachment; msg
         aria-label={error ? t('chat.voice.retry') : playing ? t('chat.voice.pause') : t('chat.voice.play')}
         className="glass-voice-btn glass-press flex size-10 shrink-0 items-center justify-center rounded-full"
       >
-        <Icon aria-hidden="true" className={`size-5 ${!sent || loading ? 'animate-spin motion-reduce:animate-none' : ''}`} fill={Icon === Play || Icon === Pause ? 'currentColor' : 'none'} />
+        <Icon aria-hidden="true" className={`size-5 ${!sent || loading || (waiting && !src) ? 'animate-spin motion-reduce:animate-none' : ''}`} fill={Icon === Play || Icon === Pause ? 'currentColor' : 'none'} />
       </button>
       <div className="min-w-0 flex-1">
         <div

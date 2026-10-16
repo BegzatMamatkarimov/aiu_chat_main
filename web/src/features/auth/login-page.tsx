@@ -217,6 +217,8 @@ export function LoginPage() {
     >
       <div className="flex w-full max-w-[400px] flex-col gap-6">
         <div className="text-center">
+          <img src="/mark-indigo.png" alt="" width={72} height={72} decoding="async" className="mx-auto mb-3 size-[72px] dark:hidden" />
+          <img src="/mark-white.png" alt="" width={72} height={72} decoding="async" className="mx-auto mb-3 hidden size-[72px] dark:block" />
           <h1 className="text-3xl font-bold">{t('app.name')}</h1>
           <p className="mt-2 text-sm text-muted-foreground">{t('app.tagline')}</p>
         </div>

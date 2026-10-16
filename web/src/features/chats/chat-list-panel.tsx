@@ -337,9 +337,7 @@ export function ChatListPanel() {
       >
         <div className="flex items-center justify-between gap-2">
           <h1 className="flex items-center gap-2 text-xl font-bold tracking-tight">
-            <span className="glass-accent flex size-8 items-center justify-center rounded-xl text-sm font-extrabold shadow-md">
-              A
-            </span>
+            <img src="/mark-white.png" alt={t('app.name')} width={32} height={32} decoding="async" className="size-8 shrink-0" />
             {t('app.name')}
           </h1>
           <div className="flex items-center gap-2">

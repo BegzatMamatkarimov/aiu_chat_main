@@ -149,10 +149,15 @@
     "sections": {
       "mine": "My chats",
       "groups": "Public groups",
-      "popular": "Popular groups"
+      "popular": "Popular groups",
+      "people": "People"
+    },
+    "people": {
+      "error": "Couldn’t search people",
+      "openError": "Couldn’t open the chat. Please try again"
     },
     "groups": {
-      "minChars": "Enter at least 2 characters to search groups",
+      "minChars": "Enter at least 2 characters to search groups and people",
       "none": "No groups found",
       "error": "Couldn’t search groups"
     },
@@ -291,6 +296,7 @@
       "admin": "admin",
       "noName": "No name",
       "memberMenu": "Actions for {{name}}",
+      "write": "Message {{name}}",
       "makeAdmin": "Make admin",
       "revokeAdmin": "Remove admin rights",
       "remove": "Remove from group",

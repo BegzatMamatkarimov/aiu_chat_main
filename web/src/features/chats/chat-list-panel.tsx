@@ -12,6 +12,8 @@ import { chatTitle, formatChatTime, matchesQuery, type ChatSummary } from '@/fea
 import { CreateGroupDialog } from '@/features/chats/create-group-dialog'
 import { ChatListRow, type ChatListItem } from '@/features/chats/chat-list-row'
 import { ProfileMenu } from '@/features/chats/profile-menu'
+import { PersonRow } from '@/features/chats/person-row'
+import { usePeopleSearch, useOpenDirectChat, peopleQuery, type Person } from '@/features/chats/use-people'
 import { PublicGroupRow } from '@/features/chats/public-group-row'
 import { FROM_LIST_STATE } from '@/features/chats/use-close-chat'
 import {
@@ -133,6 +135,17 @@ export function ChatListPanel() {
 
   const found = usePublicGroupSearch(query)
   const join = useJoinGroup(meId)
+  const people = usePeopleSearch(query, meId)
+  const direct = useOpenDirectChat()
+  const [peopleSkeleton, setPeopleSkeleton] = useState(false)
+  useEffect(() => {
+    if (!people.isPending) return
+    const id = window.setTimeout(() => setPeopleSkeleton(true), SKELETON_DELAY)
+    return () => {
+      window.clearTimeout(id)
+      setPeopleSkeleton(false)
+    }
+  }, [people.isPending])
   const joiningId = join.isPending ? join.variables : undefined
   const noChats = list.isSuccess && list.data.length === 0
   const popular = usePopularGroups(!searching && noChats)
@@ -160,6 +173,17 @@ export function ChatListPanel() {
       },
       onError: (e) => toast.error(e instanceof JoinError && e.denied ? t('chats.join.denied') : t('chats.join.error')),
     })
+
+  const onOpenPerson = (p: Person) => {
+    direct.open(p.id).then(
+      (id) => {
+        if (!id) return
+        setQuery('')
+        void navigate(`/c/${id}`, { state: FROM_LIST_STATE })
+      },
+      () => toast.error(t('chats.people.openError')),
+    )
+  }
 
   const onCreated = (g: { id: string; name: string | null; isPublic: boolean; inviteCode: string }) => {
     setCreating(false)
@@ -200,6 +224,25 @@ export function ChatListPanel() {
     return renderGroups(foundGroups)
   }
 
+  const peopleSection = () => {
+    if (people.isPending) return peopleSkeleton ? <ListSkeleton rows={2} /> : null
+    if (people.isError)
+      return (
+        <div className="flex items-center justify-between gap-3 px-3 py-3">
+          <span className="text-sm text-muted-foreground">{t('chats.people.error')}</span>
+          <Button type="button" size="sm" variant="secondary" onClick={() => void people.refetch()} disabled={people.isFetching}>
+            {t('chats.retry')}
+          </Button>
+        </div>
+      )
+    return people.people?.map((p) => (
+      <PersonRow key={p.id} person={p} disabled={direct.pendingId !== null} onOpen={() => onOpenPerson(p)} />
+    ))
+  }
+
+  const peopleActive = peopleQuery(query).length >= MIN_GROUP_QUERY
+  const peopleShown = peopleActive && (people.isPending ? peopleSkeleton : people.isError || !!people.people?.length)
+  const peopleEmpty = peopleActive && !people.isPending && !people.isError && !people.people?.length
   const groupsEmpty = groupSearch && !found.isPending && !found.isError && !foundGroups?.length
 
   const renderBody = (f: Folder) => {
@@ -215,7 +258,7 @@ export function ChatListPanel() {
             </Button>
           </EmptyState>
         ) : searching ? (
-          visible.length === 0 && (groupsEmpty || !groupSearch) ? (
+          visible.length === 0 && (groupsEmpty || !groupSearch) && (peopleEmpty || !peopleActive) ? (
             <>
               <EmptyState icon="chat" title={t('chats.noResults')} />
               {!groupSearch && <SectionNote>{t('chats.groups.minChars')}</SectionNote>}
@@ -234,6 +277,12 @@ export function ChatListPanel() {
                 <SectionTitle>{t('chats.sections.groups')}</SectionTitle>
                 {groupsSection()}
               </section>
+              {peopleShown && (
+                <section>
+                  <SectionTitle>{t('chats.sections.people')}</SectionTitle>
+                  {peopleSection()}
+                </section>
+              )}
             </>
           )
         ) : visible.length === 0 ? (

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
-import { ChevronLeft, Copy, EllipsisVertical, Globe, LogOut, MessageCircleOff, Pencil, Share2, ShieldCheck, ShieldOff, UserMinus, Lock } from 'lucide-react'
+import { ChevronLeft, Copy, EllipsisVertical, Globe, LogOut, MessageCircle, MessageCircleOff, Pencil, Share2, ShieldCheck, ShieldOff, UserMinus, Lock } from 'lucide-react'
 import { ChatAvatar } from '@/components/glass/chat-avatar'
 import { ConfirmDialog } from '@/components/glass/confirm-dialog'
 import { Button } from '@/components/ui/button'
@@ -22,6 +22,7 @@ import {
   type GroupInfo,
   type GroupMember,
 } from '@/features/chats/use-group-admin'
+import { useOpenDirectChat } from '@/features/chats/use-people'
 import { usePrefetchAdminSuccessor } from '@/features/chats/use-invite'
 import { useShareInvite } from '@/features/chats/use-share-invite'
 import { EditGroupDialog } from '@/features/messages/edit-group-dialog'
@@ -123,6 +124,8 @@ function MemberRow({
   isMe,
   canManage,
   busy,
+  writing,
+  onWrite,
   onToggleRole,
   onRemove,
 }: {
@@ -130,6 +133,8 @@ function MemberRow({
   isMe: boolean
   canManage: boolean
   busy: boolean
+  writing: boolean
+  onWrite: () => void
   onToggleRole: () => void
   onRemove: () => void
 }) {
@@ -150,6 +155,17 @@ function MemberRow({
       </div>
       {isAdmin && (
         <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">{t('group.info.admin')}</span>
+      )}
+      {!isMe && (
+        <button
+          type="button"
+          onClick={onWrite}
+          disabled={writing}
+          aria-label={t('group.info.write', { name })}
+          className="glass-press flex size-9 shrink-0 items-center justify-center rounded-full text-primary outline-none focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50"
+        >
+          <MessageCircle className="size-5" />
+        </button>
       )}
       {canManage && !isMe && (
         <DropdownMenu>
@@ -188,6 +204,8 @@ function GroupInfoContent({ group }: { group: GroupInfo }) {
   const [editOpen, setEditOpen] = useState(false)
   const [leaveOpen, setLeaveOpen] = useState(false)
   const [removing, setRemoving] = useState<GroupMember | null>(null)
+  const direct = useOpenDirectChat()
+  const navigate = useNavigate()
   const [busyId, setBusyId] = useState<string | null>(null)
 
   const list = members.data
@@ -212,6 +230,15 @@ function GroupInfoContent({ group }: { group: GroupInfo }) {
         onError: fail,
         onSettled: () => setBusyId(null),
       },
+    )
+  }
+
+  const write = (m: GroupMember) => {
+    direct.open(m.userId).then(
+      (id) => {
+        if (id) void navigate(`/c/${id}`)
+      },
+      () => toast.error(t('chats.people.openError')),
     )
   }
 
@@ -284,6 +311,8 @@ function GroupInfoContent({ group }: { group: GroupInfo }) {
                     isMe={m.userId === user?.id}
                     canManage={isAdmin}
                     busy={busyId === m.userId}
+                    writing={direct.pendingId !== null}
+                    onWrite={() => write(m)}
                     onToggleRole={() => toggleRole(m)}
                     onRemove={() => setRemoving(m)}
                   />
